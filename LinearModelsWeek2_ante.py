@@ -149,10 +149,18 @@ def perm( Q_T: np.ndarray, A: np.ndarray, t=0) -> np.ndarray:
         Z = np.vstack((Z, Q_T@A[i*t: (i + 1)*t]))
     return Z
 
-def check_rank(x: np.ndarray):
+def check_rank(x: np.ndarray) -> str:
+    """Takes a np.ndarray (matrix) and returns the rank.
+
+    Args:
+        x (np.ndarray): The matrix in question.
+
+    Returns:
+        string with result of rank condition.
+    """
     rank = np.linalg.matrix_rank(x)
     if rank < x.shape[1]:
-        result = f'The matrix is NOT full rank with rank = {rank}'
+        result = f'The matrix is NOT full rank with rank = {rank}. Eliminate linearly dependent columns.'
     elif rank==x.shape[1]: 
         result = f'The matrix is of full rank with rank = {rank}'
     return result
