@@ -200,19 +200,20 @@ def load_example_data():
     # unique IDs, and the number of times each person is observed.
     unique_id = np.unique(id_array, return_counts=True)
     T = int(unique_id[1].mean())
+    N = unique_id[0].size
     year = np.array(data[:, 1], dtype=int)
 
     # Load the rest of the data into arrays.
     y = np.array(data[:, 8]).reshape(-1, 1)
     x = np.array(
-        [np.ones((y.shape[0])),
-            data[:, 2],
-            data[:, 4],
-            data[:, 6],
-            data[:, 3],
-            data[:, 9],
-            data[:, 5],
-            data[:, 7]]
+        [np.ones((y.shape[0])),     #Constant
+            data[:, 2],             #Black
+            data[:, 4],             #Hispanic
+            data[:, 6],             #Education
+            data[:, 3],             #Experience
+            data[:, 9],             #Experiencesq
+            data[:, 5],             #Married
+            data[:, 7]]             #Union
     ).T
 
     # Lets also make some variable names
@@ -227,4 +228,20 @@ def load_example_data():
         'Married',
         'Union'
     ]
-    return y, x, T, year, label_y, label_x
+    return y, x, N, T, year, label_y, label_x
+
+def check_rank(x: np.ndarray) -> str:
+    """Takes a np.ndarray (matrix) and returns the rank.
+
+    Args:
+        x (np.ndarray): The matrix in question.
+
+    Returns:
+        string with result of rank condition.
+    """
+    rank = np.linalg.matrix_rank(x)
+    if rank < x.shape[1]:
+        result = f'The matrix {x} is NOT full rank with rank = {rank}. Eliminate linearly dependent columns.'
+    elif rank==x.shape[1]: 
+        result = f'The matrix {x} is of full rank with rank = {rank}'
+    return result
