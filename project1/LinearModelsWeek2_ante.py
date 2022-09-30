@@ -80,11 +80,13 @@ def variance(
 
 
     if transform in ('', 're' 'fd'):
-          sigma = SSR/(N*T-K) # Fill in
+        sigma = SSR/(N*T-K) # Fill in
     elif transform.lower() == 'fe':
-          sigma = SSR/(N*T-N-K) # Fill in
+        sigma = SSR/(N*T-N-K) # Fill in
     elif transform.lower() in ('be'): 
-          sigma = SSR/(N-K) # Fill in
+        sigma = SSR/(N-K) # Fill in
+    elif transform.lower() == 're':
+        sigma = np.array(SSR/(T * N - K))
     else:
         raise Exception('Invalid transform provided.')
     
