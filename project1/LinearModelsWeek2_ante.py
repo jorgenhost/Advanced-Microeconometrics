@@ -100,6 +100,7 @@ def print_table(
         results: dict,
         headers=["", "Beta", "Se", "t-values"],
         title="Results",
+        tablefmt=None,
         **kwargs
     ) -> None:
     label_y, label_x = labels
@@ -117,7 +118,7 @@ def print_table(
     # Print table
     print(title)
     print(f"Dependent variable: {label_y}\n")
-    print(tabulate(table, headers, **kwargs))
+    print(tabulate(table, headers, tablefmt, **kwargs))
     
     # Print data for model specification
     print(f"R\u00b2 = {results.get('R2').item():.3f}")
