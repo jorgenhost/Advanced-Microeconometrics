@@ -1,6 +1,9 @@
 import numpy as np
 from numpy import linalg as la
+from pandas import DataFrame
 from tabulate import tabulate
+import os
+from typing import Optional, List, Tuple, Union, Iterable
 
 
 
@@ -31,11 +34,11 @@ def estimate(
     SST = (y - np.mean(y)).T@(y - np.mean(y))
     R2 = 1-SSR/SST # Fill in
 
-    sigma, cov, se = variance(transform, SSR, x, N, T)
+    sigma, cov, se, deg_of_frees = variance(transform, SSR, x, N, T)
     t_values =  b_hat/se # Fill in
     
-    names = ['b_hat', 'se', 'sigma', 't_values', 'R2', 'cov']
-    results = [b_hat, se, sigma, t_values, R2, cov]
+    names = ['b_hat', 'se', 'sigma', 't_values', 'R2', 'cov', 'N', 'T', 'deg_of_frees']
+    results = [b_hat, se, sigma, t_values, R2, cov, N, T, deg_of_frees]
     return dict(zip(names, results))
 
     
@@ -78,19 +81,21 @@ def variance(
 
     K=x.shape[1]
 
-
-    if transform in ('', 're' 'fd'):
-          sigma = SSR/(N*T-K) # Fill in
+    if transform in ('', 're', 'fd'):
+        sigma = SSR/(N*T-K) # Fill in
+        deg_of_frees = N*T-K
     elif transform.lower() == 'fe':
-          sigma = SSR/(N*T-N-K) # Fill in
+        sigma = SSR/(N*T-N-K) # Fill in
+        deg_of_frees = N*T-N-K
     elif transform.lower() in ('be'): 
-          sigma = SSR/(N-K) # Fill in
+        sigma = SSR/(N-K) # Fill in
+        deg_of_frees = N-K
     else:
         raise Exception('Invalid transform provided.')
     
     cov =  sigma*la.inv(x.T@x) # Fill in
     se =  np.sqrt(cov.diagonal()).reshape(-1, 1) # Fill in
-    return sigma, cov, se
+    return sigma, cov, se, deg_of_frees
 
 
 def print_table(
@@ -98,6 +103,7 @@ def print_table(
         results: dict,
         headers=["", "Beta", "Se", "t-values"],
         title="Results",
+        tablefmt=None,
         **kwargs
     ) -> None:
     label_y, label_x = labels
@@ -115,11 +121,14 @@ def print_table(
     # Print table
     print(title)
     print(f"Dependent variable: {label_y}\n")
-    print(tabulate(table, headers, **kwargs))
+    print(tabulate(table, headers, tablefmt, **kwargs))
     
     # Print data for model specification
     print(f"R\u00b2 = {results.get('R2').item():.3f}")
     print(f"\u03C3\u00b2 = {results.get('sigma').item():.3f}")
+    print(f"DF={results.get('deg_of_frees'):.3f}")
+    print(f"N={results.get('N'):.3f}")
+    print(f"T={results.get('T'):.3f}")
 
 
 def perm( Q_T: np.ndarray, A: np.ndarray, t=0) -> np.ndarray:
@@ -149,10 +158,18 @@ def perm( Q_T: np.ndarray, A: np.ndarray, t=0) -> np.ndarray:
         Z = np.vstack((Z, Q_T@A[i*t: (i + 1)*t]))
     return Z
 
-def check_rank(x: np.ndarray):
+def check_rank(x: np.ndarray) -> str:
+    """Takes a np.ndarray (matrix) and returns the rank.
+
+    Args:
+        x (np.ndarray): The matrix in question.
+
+    Returns:
+        string with result of rank condition.
+    """
     rank = np.linalg.matrix_rank(x)
     if rank < x.shape[1]:
-        result = f'The matrix is NOT full rank with rank = {rank}'
+        result = f'The matrix is NOT full rank with rank = {rank}. Eliminate linearly dependent columns.'
     elif rank==x.shape[1]: 
         result = f'The matrix is of full rank with rank = {rank}'
     return result
