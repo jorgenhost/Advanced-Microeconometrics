@@ -1,10 +1,10 @@
 import numpy as np
 from numpy import linalg as la
-from pandas import DataFrame
+import pandas as pd
 from tabulate import tabulate
 import os
 from typing import Optional, List, Tuple, Union, Iterable
-
+from scipy import stats
 
 
 def estimate( 
@@ -173,3 +173,59 @@ def check_rank(x: np.ndarray) -> str:
     elif rank==x.shape[1]: 
         result = f'The matrix is of full rank with rank = {rank}'
     return result
+
+def outreg(
+    results: dict,
+    var_labels: list,
+    name: str,
+) -> pd.Series:
+    
+    '''
+    Args:
+        Results (dict): Results from our regression to be passed as dictionary
+        var_labels (list): List of variable names used previously in our regression
+        name (str): the name given to the pd.Series as output
+    
+    Returns:
+        A pd.Series with variable names as index. NB! Add number of obs (N), time periods (T), regressors (K) and degrees of freedoms manually if appropriate.
+        Ideally, pass one result at a time, and then merge with pandas later on.
+    
+    '''
+    sig_levels = {0.05: '*', 0.01: '**', 0.001: '***'} #Set significance level
+    
+    deg_of_frees = results['deg_of_frees'] #Extract degrees of freedom from results dict
+
+    beta = pd.Series(results['b_hat'].reshape(-1), index=var_labels).round(4) #Make series of our coeff
+    se = pd.Series(results['se'].reshape(-1), index=var_labels).round(4) #Make series of standard errors
+    t_stat = pd.Series(results['t_values'].reshape(-1), index=var_labels).round(4) #Make series of t-values
+    p_val = pd.Series(
+                stats.t.cdf(-np.abs(t_stat),df=deg_of_frees)*2, index=var_labels).round(4) #Make series of p-values, using the deg of freedoms
+    
+    temp_df = pd.concat((beta, se, p_val), axis=1) #concatenate above into dataframe, index is the varlabels
+    temp_df.columns=['beta', 'se', 'pt'] #set column names to beta, se, pt (p-values)
+    temp_df=temp_df.stack() #Stack it so we make a multiindex
+    temp_df.name=name #Have to name the series
+
+    #Defining i, j, k
+    # i: index position of our coeffs/var_labels
+    # j: index position of our standard errors
+    # k: index position of our p-values
+    # -> loop through these in increments of 3
+
+    for i,j,k in zip(range(0,len(temp_df-2),3), range(1, len(temp_df-1),3), range(2,len(temp_df),3)):
+        var_index=temp_df.index[i]
+        se_index=temp_df.index[j]
+        p_val_index=temp_df.index[k]
+        if temp_df.at[p_val_index]<0.001:
+            temp_df.at[var_index]=str(temp_df.at[var_index])+sig_levels[0.001]
+        elif temp_df.at[p_val_index]<0.01:
+            temp_df.at[var_index]=str(temp_df.at[var_index])+sig_levels[0.01]
+        elif temp_df.at[p_val_index]<=0.05:
+            temp_df.at[var_index]=str(temp_df.at[var_index])+sig_levels[0.05]
+        elif temp_df.at[p_val_index]>0.05:
+            temp_df.at[var_index]=temp_df.at[var_index]
+        temp_df.at[se_index]=f'({temp_df.at[se_index]})'
+        
+    temp_df = temp_df.drop('pt', level=1) #Remove our 'helper' p-values
+    
+    return temp_df

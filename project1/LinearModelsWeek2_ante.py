@@ -85,8 +85,8 @@ def variance(
         sigma = SSR/(N*T-K) # Fill in
         deg_of_frees = N*T-K
     elif transform.lower() == 'fe':
-        sigma = SSR/(N*T-N-K) # Fill in
-        deg_of_frees = N*T-N-K
+        sigma = SSR/(N*(T-1)-K) # Fill in
+        deg_of_frees = N*(T-1)-K
     elif transform.lower() in ('be'): 
         sigma = SSR/(N-K) # Fill in
         deg_of_frees = N-K
@@ -126,9 +126,9 @@ def print_table(
     # Print data for model specification
     print(f"R\u00b2 = {results.get('R2').item():.3f}")
     print(f"\u03C3\u00b2 = {results.get('sigma').item():.3f}")
-    print(f"DF={results.get('deg_of_frees'):.3f}")
-    print(f"N={results.get('N'):.3f}")
-    print(f"T={results.get('T'):.3f}")
+    print(f"DF={results.get('deg_of_frees')}")
+    print(f"N={results.get('N')}")
+    print(f"T={results.get('T')}")
 
 
 def perm( Q_T: np.ndarray, A: np.ndarray, t=0) -> np.ndarray:
@@ -182,7 +182,7 @@ def outreg(
     
     '''
     Args:
-        Results (dict): Results from our regression to be passed as dictionary
+        Results (dict): pass the results (dict) output from the estimate()-function
         var_labels (list): List of variable names used previously in our regression
         name (str): the name given to the pd.Series as output
     
@@ -191,7 +191,7 @@ def outreg(
         Ideally, pass one result at a time, and then merge with pandas later on.
     
     '''
-    sig_levels = {0.05: '*', 0.01: '**', 0.001: '***'} #Set significance level
+    sig_levels = {0.05: '*', 0.01: '**', 0.001: '***'} #Set significance level for p-value
     
     deg_of_frees = results['deg_of_frees'] #Extract degrees of freedom from results dict
 
@@ -210,7 +210,7 @@ def outreg(
     # i: index position of our coeffs/var_labels
     # j: index position of our standard errors
     # k: index position of our p-values
-    # -> loop through these in increments of 3
+    # -> loop through these in increments of 3 and add stars for significance levels
 
     for i,j,k in zip(range(0,len(temp_df-2),3), range(1, len(temp_df-1),3), range(2,len(temp_df),3)):
         var_index=temp_df.index[i]
