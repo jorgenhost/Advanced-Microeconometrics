@@ -4,6 +4,11 @@ use "firms.dta", clear
 
 xtset firmid
 
+xtreg ldsa lcap lemp, fe
 xtreg ldsa lcap lemp i.year, fe
 
-xtreg ldsa lcap c.lemp##i.year, fe
+
+outreg
+
+binscatter(ldsa lemp)
+binscatter(ldsa lcap)
