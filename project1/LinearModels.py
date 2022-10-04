@@ -229,3 +229,89 @@ def outreg(
     temp_df = temp_df.drop('pt', level=1) #Remove our 'helper' p-values
     
     return temp_df
+
+def serial_corr(
+    y: np.array,
+    x: np.array, 
+    T: int,
+    N: int,
+    year: np.array):
+
+    '''
+    Args:
+    NB! This is made for an FD-estimate (FE is slightly different)
+        y (np.array)    : Array of outcome variable
+        x (np.array)    : Array of covariates
+        T (int)         : Number of time periods
+        N (int)         : Number of observations
+        year (np.array) : Array of year variable
+    
+    Returns:
+        Returns estimate of this regression
+    
+    '''
+
+    b_hat = est_ols(y,x)
+    e = y-x@b_hat
+    fd_t=np.eye(T-1)
+    fd_t=fd_t[:-1]
+    e_l = perm(fd_t,e)
+    reduced_year = year[year != np.unique(year).min()]      #Remove the first year
+    e = e[reduced_year != np.unique(reduced_year).min()]    #Remove the second year
+    # e_l are the lagged values of e.
+    return estimate(e, e_l,N=N,T=T-2) #We lose two time periods
+
+def strict_exo_test(
+    x: np.array,
+    y: np.array,
+    T: int,
+    N: int,
+    lead_var: np.array,
+    year: np.array,
+):
+
+    '''
+    Args:
+    NB! Remove time-variant column(s) from covariates before proceeding
+        y (np.array)        : Array of outcome variable
+        x (np.array)        : Array of covariates (remove time-invariant covariates before proceeding)
+        T (int)             : Number of time periods
+        N (int)             : Number of observations
+        lead_var (np.array) : The variable to lead in FE regression
+        year (np.array)     : Array of year variable
+    
+    Returns:
+        Returns estimate of this regression
+    
+    '''
+
+    # A lead matrix is basically an Identity matrix, 
+    # but with the diagonal 'one to the right'
+
+    lead = 1
+    lead_mat = np.eye(T, k=lead)[:-1]
+    
+    #Lead of var, this means we lose the last year
+    lead_out = perm(lead_mat, lead_var)
+    last_year = np.unique(year).max()
+
+
+    # Lead of emp var, this means we lose the last year
+    #Let's trim our matrix x and vector y so we don't have the last year  
+    x_exo = x[year!=last_year]
+    y_exo = y[year!=last_year]
+
+    # We then 'stack horizontally' our union_lead into our matrix
+    # This adds a vector of observations - in this case our union_lead
+    x_lead_FE = np.hstack((x_exo, lead_out))
+
+    #Lets demean our y
+    Q_T = demeaning_matrix(T-1) #Remember to subtract one time period
+    y_lead_demean = perm(Q_T, y_exo)
+    x_lead_demean = perm(Q_T, x_lead_FE)
+
+    return estimate(y_lead_demean, x_lead_demean, transform='fe', T=T-1, N=N)
+
+def demeaning_matrix(T):
+    Q_T = np.eye(T)-np.tile(1/T,T)
+    return Q_T
