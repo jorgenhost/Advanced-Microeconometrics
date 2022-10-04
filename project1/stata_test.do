@@ -15,3 +15,6 @@ outreg
 
 binscatter(ldsa lemp)
 binscatter(ldsa lcap)
+
+use "serial_corr.dta", clear
+reg e e_1
