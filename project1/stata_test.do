@@ -5,9 +5,11 @@ use "firms.dta", clear
 xtset firmid year
 
 xtreg ldsa lcap lemp, fe
+test lcap + lemp = 1
 reg ldsa lcap lemp
-xtreg ldsa lcap lemp i.year, fe
+test lcap + lemp = 1
 reg d.(ldsa lcap lemp), nocons //FD-est?
+test d.lcap+d.lemp=1
  
 outreg
 
