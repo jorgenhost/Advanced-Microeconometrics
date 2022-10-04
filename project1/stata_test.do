@@ -5,6 +5,7 @@ use "firms.dta", clear
 xtset firmid year
 
 xtreg ldsa lcap lemp, fe
+reg ldsa lcap lemp
 xtreg ldsa lcap lemp i.year, fe
 reg d.(ldsa lcap lemp), nocons //FD-est?
  
