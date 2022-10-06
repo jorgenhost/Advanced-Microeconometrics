@@ -48,7 +48,7 @@ def estimate(
 
     # If estimating piv, transform x before we calculating variance:
     if z is not None:
-        x_ = None # fill in 
+        x_ = z@(la.inv(z.T@z))@z.T@x # fill in 
         R2 = np.array(np.nan)
     else: 
         x_ = x
@@ -89,7 +89,9 @@ def est_piv( y: np.array, x: np.array, z: np.array) -> np.array:
         np.array: Estimated beta coefficients.
     """
     
-    betahat =  None # FILL IN: Estimate betahat and return it 
+    x_hat = z@(la.inv(z.T@z))@z.T@x
+
+    betahat = la.inv(x_hat.T@x_hat)@x_hat.T@y # FILL IN: Estimate betahat and return it 
     return betahat 
 
 def variance( 
@@ -147,7 +149,7 @@ def robust( x: np.array, residual: np.array, T:int) -> tuple:
         t: number of time periods 
     '''
     # If only cross sectional, we can easily use the diagonal.
-    if not T:
+    if (not T) or (T==1):
         Ainv = la.inv(x.T@x)
         uhat2 = residual ** 2
         uhat2_x = uhat2 * x # elementwise multiplication: avoids forming the diagonal matrix (RAM intensive!)
@@ -155,8 +157,16 @@ def robust( x: np.array, residual: np.array, T:int) -> tuple:
     
     # Else we loop over each individual.
     else:
-       
-        None # Fill in
+        N = int(x.shape[0] / T)
+        K = int(x.shape[1])
+        emp = np.zeros((K, K)) # some empty array
+        
+        for i in range(N):
+            idx_i = slice(i*T, (i+1)*T) # index values for individual i 
+            omega = residual[idx_i]@residual[idx_i].T
+            emp += x[idx_i].T@omega@x[idx_i]
+
+        cov = la.inv(x.T@x)@emp@la.inv(x.T@x)
     
     se = np.sqrt(np.diag(cov)).reshape(-1, 1)
     return cov, se
@@ -246,3 +256,32 @@ def perm( Q_T: np.array, A: np.array) -> np.array:
     return Z
 
 
+def serial_corr(
+    y: np.array,
+    x: np.array, 
+    T: int,
+    year: np.array):
+
+    '''
+    Args:
+    NB! This is made for an FD-estimate (FE is slightly different)
+        y (np.array)    : Array of outcome variable
+        x (np.array)    : Array of covariates
+        T (int)         : Number of time periods
+        N (int)         : Number of observations
+        year (np.array) : Array of year variable
+    
+    Returns:
+        Returns estimate of this regression
+    
+    '''
+
+    b_hat = est_ols(y,x)
+    e = y-x@b_hat
+    fd_t=np.eye(T-1)
+    fd_t=fd_t[:-1]
+    e_l = perm(fd_t,e)
+    reduced_year = year[year != np.unique(year).min()]      #Remove the first year
+    e = e[reduced_year != np.unique(reduced_year).min()]    #Remove the second year
+    # e_l are the lagged values of e.
+    return estimate(e, e_l,T=T-2) #We lose two time periods
