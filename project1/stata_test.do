@@ -1,4 +1,4 @@
-cd "C:\Users\JBH\Dropbox\10_semester\Advanced Microeconometrics\repo\project1"
+cd "C:\Users\JBH\Dropbox\10_semester\Advanced Microeconometrics\project1"
 
 use "firms.dta", clear
 
@@ -6,6 +6,10 @@ xtset firmid year
 
 xtreg ldsa lcap lemp, fe
 test lcap + lemp = 1
+
+xtreg ldsa lcap lemp F.lemp, fe //strict exogeneity
+
+
 reg ldsa lcap lemp
 test lcap + lemp = 1
 reg d.(ldsa lcap lemp), nocons //FD-est?
