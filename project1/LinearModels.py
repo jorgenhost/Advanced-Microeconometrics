@@ -239,7 +239,7 @@ def serial_corr(
 
     '''
     Args:
-    NB! This is made for an FD-estimate (FE is slightly different)
+    NB! This is made for an FD-estimate
         y (np.array)    : Array of outcome variable
         x (np.array)    : Array of covariates
         T (int)         : Number of time periods
