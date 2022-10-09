@@ -13,7 +13,7 @@ def estimate(
         transform='', 
         N=None, 
         T=None,
-        DO_SERIAL_CORR=None) -> dict:
+        serial_correlation=None) -> dict:
     """Takes some np.arrays and estimates regular OLS, FE or FD.
     
 
@@ -40,12 +40,17 @@ def estimate(
 
     sigma, cov, se, deg_of_frees = variance(transform, SSR, x, N, T)
     
-    if DO_SERIAL_CORR is True:
-        true_beta = -.5
-        t_values =  (b_hat-true_beta)/se # Fill in
-    else:
-        t_values=b_hat/se
+    if serial_correlation is None:
+        DO_SERR_CORR = False
+    else: 
+        DO_SERR_CORR = True
     
+    if DO_SERR_CORR:
+        true_rho = -0.5
+        t_values =  (b_hat-true_rho)/se # Fill in
+    else:
+        t_values =  b_hat/se # Fill in
+
     names = ['b_hat', 'se', 'sigma', 't_values', 'R2', 'cov', 'N', 'T', 'deg_of_frees']
     results = [b_hat, se, sigma, t_values, R2, cov, N, T, deg_of_frees]
     return dict(zip(names, results))
@@ -268,7 +273,7 @@ def serial_corr(
     reduced_year = year[year != np.unique(year).min()]      #Remove the first year
     e = e[reduced_year != np.unique(reduced_year).min()]    #Remove the second year
     # e_l are the lagged values of e.
-    return estimate(e, e_l,N=N,T=T-2, DO_SERIAL_CORR=True) #We lose two time periods
+    return estimate(e, e_l,N=N,T=T-2, serial_correlation=True) #We lose two time periods
 
 def strict_exo_test(
     x: np.array,
