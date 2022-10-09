@@ -8,8 +8,12 @@ from scipy import stats
 
 
 def estimate( 
-        y: np.ndarray, x: np.ndarray, transform='', N=None, T=None
-    ) -> dict:
+        y: np.ndarray, 
+        x: np.ndarray, 
+        transform='', 
+        N=None, 
+        T=None,
+        DO_SERIAL_CORR=None) -> dict:
     """Takes some np.arrays and estimates regular OLS, FE or FD.
     
 
@@ -35,7 +39,12 @@ def estimate(
     R2 = 1-SSR/SST # Fill in
 
     sigma, cov, se, deg_of_frees = variance(transform, SSR, x, N, T)
-    t_values =  b_hat/se # Fill in
+    
+    if DO_SERIAL_CORR is True:
+        true_beta = -.5
+        t_values =  (b_hat-true_beta)/se # Fill in
+    else:
+        t_values=b_hat/se
     
     names = ['b_hat', 'se', 'sigma', 't_values', 'R2', 'cov', 'N', 'T', 'deg_of_frees']
     results = [b_hat, se, sigma, t_values, R2, cov, N, T, deg_of_frees]
@@ -259,7 +268,7 @@ def serial_corr(
     reduced_year = year[year != np.unique(year).min()]      #Remove the first year
     e = e[reduced_year != np.unique(reduced_year).min()]    #Remove the second year
     # e_l are the lagged values of e.
-    return estimate(e, e_l,N=N,T=T-2) #We lose two time periods
+    return estimate(e, e_l,N=N,T=T-2, DO_SERIAL_CORR=True) #We lose two time periods
 
 def strict_exo_test(
     x: np.array,
