@@ -20,13 +20,14 @@ test d.lcap+d.lemp=1
  
  
 //Test for auto correlation
-xtserial ldsa lcap lemp //community written func
-xtreg d.(ldsa lcap lemp)
-predict eit, ue
+xtserial ldsa lcap lemp, output //community written func
+reg d.(ldsa lcap lemp)
+predict eit, res
 
 gen eit_1 = l.eit
+
 reg eit eit_1, nocons
-test eit_1=-.5
+ttest eit_1=-.5
 
 binscatter eit eit_1
 
