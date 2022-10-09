@@ -58,6 +58,7 @@
 
 \renewcommand{\tablenotes}{\setlength\labelsep{0pt}}
 \renewcommand{\tablenotes}{\vspace{-.5em}}
+\renewcommand{\tablenotes}{\setstretch{1}}
 
 \title{AME Project 1: Linear Panel Data and Production Technology}
 \author{asfugleholm}
@@ -246,11 +247,11 @@ Comparing POLS with FE and FD estimates, the effect of capital on output is dras
 % \textcolor{blue}{Further, it follows that $e_{it}$ must be serially uncorrelated for FD to be a consistent estimator \cite{Wooldridge_2016_serial_corr}}.
 The FD and FE estimators both eliminate the omitted variable bias by taking the firm-specific fixed effects into account. The interpretation of $\beta$ within the two models is the same, only the estimation differs (\cite{Wooldrige_2010_10}). When $T=2$, the two estimators are numerically identical. When $N>2$, the choice between the two hinges on the level of serial correlation in the idiosyncratic errors. FE is more efficient if errors are serially uncorrelated; the differenced errors will in this case be correlated over time, although the errors themselves are not. This means that FD.3 is violated while FE.3 is not. Further, we loose an observation in the first time period and thereby some precision in our estimation when using FD ($T=12$ for FE, $T=11$ for FD). 
 On the other hand, FD is more efficient than FE if the error term follows a random walk; the errors themselves are correlated over time, but the differenced errors are not. When the error term is serially correlated, first-differencing leaves only white noise.
-To inform our choice between FE and FD, we perform a test for serial correlation by running the following regression 
+To inform our choice between FE and FD, we perform a test for serial correlation by running the following regression:
 \begin{equation}
     \widehat{\epsilon}_{it}= \rho\widehat{\epsilon}_{i,t-1}+u_{it},
 \end{equation}
-where $\widehat{\epsilon}_{it}$ are residuals from regression (???) and $\rho$ measures the degree of serial correlation. 
+where $\widehat{\epsilon}_{it}\equiv \Delta u_{it}$ comes from the auxiliary FD-AR(1) regression $\Delta y_{it} = \Delta y_{it-1} + \Delta u_{it}$. $\rho$ measures the degree of serial correlation. 
 The results are reported in \textit{table \ref{tab:Serial_corr}}.
 %Let's assume some random walk (could be that if an observation is low/high today, then it is likely also to be low/high tomorrow), then FE simply subtracts the time and firm specific means, whereas the error term of FD leaves only white noise. 
 %\bigskip
@@ -272,13 +273,16 @@ The results are reported in \textit{table \ref{tab:Serial_corr}}.
         $T$          & 10 \\
         \bottomrule
         \end{tabular}
+        \begin{tablenotes}
+           \footnotesize \textit{Note:} (S.E.), $p<0.05$*, $<0.01$**, $<0.001$***.
+        \end{tablenotes}
     \end{threeparttable}
 \end{table}
 
 We formulate a null and alternative hypothesis for the presence of serial correlation: $\mathcal{H}_0:\rho=0$ and $\mathcal{H}_A:\rho\ne0$. 
 \textit{Table \ref{tab:Serial_corr}} shows that the t-statistic is significantly greater than the critical value on a 1\% level, so we reject $\mathcal{H}_0$ and conclude that the errors are serially correlated. This suggests that in our setting, FD is more efficient than FE and thus the preferred estimator. 
 
-We also conduct a test for strict exogeneity required for both FD and FE to be consistent. This is done by include a lead of employment (results are analogous to including a lead of capital). 
+We also conduct a test for strict exogeneity required for both FD and FE to be consistent. This is done by including a lead of employment (results are analogous to including a lead of capital). 
 
 \begin{table}[H]
     \centering
@@ -297,7 +301,7 @@ We also conduct a test for strict exogeneity required for both FD and FE to be c
                                                  &  (0.0218) \\
                                 \midrule
         $N$                                         &        441 \\
-        $T$                                        &         11  \\
+        $T$                                        &         12  \\
         \bottomrule
         \end{tabular}
             \begin{tablenotes}
@@ -306,25 +310,24 @@ We also conduct a test for strict exogeneity required for both FD and FE to be c
     \end{threeparttable}
 \end{table}
 
-Recall \textbf{FE.1}/\textbf{FD.1}. In the context of this paper, these imply that predetermined log sales at time $t$ cannot be correlated be with log employment in any other time period, when controlling for unobserved time-invariant heterogeneity (\cite{Wooldridge_2016_serial_corr}). The result from table \ref{tab:strict_exo} shows that this is fortunately the case. As such, we are left with inconsistent estimates from FD and FE in table \ref{tab:est_results}.
+Recall \textbf{FE.1}/\textbf{FD.1}. In the context of this paper, these imply that predetermined log sales at time $t$ cannot be correlated be with log employment in any other time period, when controlling for unobserved time-invariant heterogeneity (\cite{Wooldridge_2016_serial_corr}). The result from table \ref{tab:strict_exo} shows that this is unfortunately the case. As such, we are left with inconsistent estimates from FD and FE in table \ref{tab:est_results}.
 
 \subsection{Testing Hypothesis of Constant Returns to Scale}
-For practical purposes, we elect to to test the phenomenon of constant returns to scale despite our inconsistent estimates. To do this, define define the following Wald statistics of some linear hypothesis $\mathbf{R\beta=r}$:
+For illustrative purposes, we elect to to test the phenomenon of constant returns to scale despite our inconsistent estimates. We define the Wald statistics of the linear hypothesis $\mathbf{R\beta=r}$:
 \begin{equation*}
     (\mathbf{R} \widehat{\boldsymbol{\beta}}-\mathbf{R} \boldsymbol{\beta})^{\prime}\left[\mathbf{R}(\mathbf{V} / N) \mathbf{R}^{\prime}\right]^{-1}(\mathbf{R} \widehat{\boldsymbol{\beta}}-\mathbf{R} \boldsymbol{\beta}) \stackrel{d}{\approx} \chi_Q^2
 \end{equation*}
 
-In the context of this paper, $\mathbf{R}=\left[
+With $\mathcal{H}_0:\beta_K+\beta_L=1$, $\mathbf{R}=\left[
     \begin{array}{ll}
     1 & 1 
     \end{array}\right]$ with $\mathbf{r=1}$. 
-
-For the $FD$- and $FE$-model, we find a test statistics of $\chi^2 (1)=122,656$  and $\chi^2 (1)=74,256$, respectively, with $\mathbf{Q}=rank(\mathbf{R})=1$ degrees of freedom. These test statistics are way above the critical value with p-value equal to zero. On the basis of this test, we therefore reject the notion of constant of returns to scale. However, as established before, we emphasize the questionable validity of this test as the strict exogeneity assumption is violated.
+For FD and FE, the test statistics are $\chi^2 (1)=122,656$ and $\chi^2 (1)=74,256$, resp., with $\mathbf{Q}=rank(\mathbf{R})=1$ degrees of freedom. These test statistics are above the critical value on a 1 \% significance level with p-values equal to zero. We therefore reject the null of constant of returns to scale. However, as established before, we emphasize the questionable validity of this test as the strict exogeneity assumption is violated. 
 
 \section{Discussion}
 As evidenced above, we are left dissatisfied with our estimates from Table \ref{tab:est_results}. First, we are unwilling to assume that labor and capital input is uncorrelated with unobserved time-invariant heterogeneity $c_i$. We gave an example of geographic advantage for specific French manufacturing which renders POLS an inconsistent estimator. We then turn to examining the link between firm size and economic performance using $FE$ and $FD$. Despite accounting for the time-invariant heterogeneity, the assumption of strict exogeneity is violated which renders $FD$ and $FE$ inconsistent estimators. 
 
-To account for this crucial problem, we can turn to employ dynamic panel methods, one example being the Arellano-Bond estimator. In short, this is consistent under the assumption of sequential exogeneity. That is, any \textit{previous} realisations of, say, log employment, is uncorrelated with \textit{current} log sales.
+To account for this crucial problem, we can turn to employ dynamic panel methods, one example being a pooled instrument variable estimation. In short, this is consistent under the assumption of sequential exogeneity. That is, any \textit{previous} realisations of, say, log employment, is uncorrelated with \textit{current} log sales.
 
 If we assume a panel data model on the form $y_{i t}=\rho y_{i t-1}+\mathbf{x}_{i t}\beta+c_{i}+\,u_{i t}$. By taking first differencing, $\Delta y_{t t}=\rho\Delta y_{t t-1}+\Delta{\bf x}_{t t}^{\prime}\beta+\Delta u_{t t}$. The idea here is using log sales from two years prior as instruments ($z_{it}=y_{t-2}$) for the difference in previous log sales ($\Delta y_{t-1}$). To see why, consider that instruments must be:
 
@@ -333,7 +336,7 @@ If we assume a panel data model on the form $y_{i t}=\rho y_{i t-1}+\mathbf{x}_{
     \item Relevant: $E\left[y_{t-2}\Delta y_{t-1}\right]=E\left[y_{t-2}(y_{t-1}-y_{t-2})\right]\neq 0$
 \end{enumerate}
 
-To sum up, any random labor strike or supply chain disruptions at time $t$ which lives in the idiosyncratic error term $u_{it}$ had no influence on log sales two years prior. On the other hand, log sales two years prior are naturally correlated with the difference in log sales one and two years prior.
+Extending this idea to define a set of moment conditions from valid instruments is at the heart of the Arellano-Bond estimator, which goes beyond the scope of this paper. To sum up, any random labor strike or supply chain disruptions at time $t$ which lives in the idiosyncratic error term $u_{it}$ had no influence on log sales two years prior. On the other hand, log sales two years prior are naturally correlated with the difference in log sales one and two years prior.
 
 \section{Conclusion}
 In this paper, we examine the link between firm size and performance. We find no evidence of constant returns to scale - that is firm output proportionally follows input. In fact, our results suggest decreasing returns to scale, implying that bigger is not always better. 
