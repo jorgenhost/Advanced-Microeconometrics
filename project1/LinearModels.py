@@ -12,7 +12,9 @@ def estimate(
         x: np.ndarray, 
         transform='', 
         N=None, 
-        T=None) -> dict:
+        T=None,
+        robust_se=False
+    ) -> dict:
     """Takes some np.arrays and estimates regular OLS, FE or FD.
     
 
@@ -26,6 +28,7 @@ def estimate(
         number of individuals. Defaults to None.
         T (int, optional): If panel, then the number of periods an 
         individual is observerd. Defaults to None.
+        robust_se (bool): Use robust std errors. Default is False (use normal standard errors)
 
     Returns:
         dict: A dictionary with the results from the ols-estimation.
@@ -38,8 +41,10 @@ def estimate(
     R2 = 1-SSR/SST # Fill in
 
     sigma, cov, se, deg_of_frees = variance(transform, SSR, x, N, T)
+    if robust_se:
+        cov, se = robust(x, residual, T)
     
-    t_values =  b_hat/se # Fill in
+    t_values = b_hat/se
 
     names = ['b_hat', 'se', 'sigma', 't_values', 'R2', 'cov', 'N', 'T', 'deg_of_frees']
     results = [b_hat, se, sigma, t_values, R2, cov, N, T, deg_of_frees]
@@ -182,6 +187,7 @@ def outreg(
     results: dict,
     var_labels: list,
     name: str,
+    robust_se = False,
 ) -> pd.Series:
     
     '''
@@ -189,6 +195,7 @@ def outreg(
         Results (dict): pass the results (dict) output from the estimate()-function
         var_labels (list): List of variable names used previously in our regression
         name (str): the name given to the pd.Series as output
+        robust_se (bool): If robust std. errors have been used, write in brackets []
     
     Returns:
         A pd.Series with variable names as index. NB! Add number of obs (N), time periods (T), regressors (K) and degrees of freedoms manually if appropriate.
@@ -199,7 +206,7 @@ def outreg(
     
     deg_of_frees = results['deg_of_frees'] #Extract degrees of freedom from results dict
 
-    beta = pd.Series(results['b_hat'].reshape(-1), index=var_labels).round(4) #Make series of our coeff
+    beta = pd.Series(results['b_hat'].reshape(-1), index=var_labels).round(2) #Make series of our coeff
     se = pd.Series(results['se'].reshape(-1), index=var_labels).round(4) #Make series of standard errors
     t_stat = pd.Series(results['t_values'].reshape(-1), index=var_labels).round(4) #Make series of t-values
     p_val = pd.Series(
@@ -228,7 +235,13 @@ def outreg(
             temp_df.at[var_index]=str(temp_df.at[var_index])+sig_levels[0.05]
         elif temp_df.at[p_val_index]>0.05:
             temp_df.at[var_index]=temp_df.at[var_index]
-        temp_df.at[se_index]=f'({temp_df.at[se_index]})'
+        
+        #Write standard errors 
+        if robust_se == True:
+            temp_df.at[se_index]=f'[{temp_df.at[se_index]}]' #In brackes for robust std errors
+        else:
+            temp_df.at[se_index]=f'({temp_df.at[se_index]})' #In parentheses for 'normal' std errors
+        
         
     temp_df = temp_df.drop('pt', level=1) #Remove our 'helper' p-values
     
@@ -315,6 +328,35 @@ def strict_exo_test(
     x_lead_demean = perm(Q_T, x_lead_FE)
 
     return estimate(y_lead_demean, x_lead_demean, transform='fe', T=T-1, N=N)
+
+def robust( x: np.array, residual: np.array, T:int) -> tuple:
+    '''Calculates the robust variance estimator 
+
+    ARGS: 
+        t: number of time periods 
+    '''
+    # If only cross sectional, we can easily use the diagonal.
+    if (not T) or (T==1):
+        Ainv = la.inv(x.T@x)
+        uhat2 = residual ** 2
+        uhat2_x = uhat2 * x # elementwise multiplication: avoids forming the diagonal matrix (RAM intensive!)
+        cov = Ainv @ (x.T@uhat2_x) @ Ainv
+    
+    # Else we loop over each individual.
+    else:
+        N = int(x.shape[0] / T)
+        K = int(x.shape[1])
+        emp = np.zeros((K, K)) # some empty array
+        
+        for i in range(N):
+            idx_i = slice(i*T, (i+1)*T) # index values for individual i 
+            omega = residual[idx_i]@residual[idx_i].T
+            emp += x[idx_i].T@omega@x[idx_i]
+
+        cov = la.inv(x.T@x)@emp@la.inv(x.T@x)
+    
+    se = np.sqrt(np.diag(cov)).reshape(-1, 1)
+    return cov, se
 
 def demeaning_matrix(T):
     Q_T = np.eye(T)-np.tile(1/T,T)
