@@ -200,6 +200,7 @@ def outreg(
     Returns:
         A pd.Series with variable names as index. NB! Add number of obs (N), time periods (T), regressors (K) and degrees of freedoms manually if appropriate.
         Ideally, pass one result at a time, and then merge with pandas later on.
+        When merging, use 'outer' as method. In this case, it picks up all labels defined from different estimations
     
     '''
     sig_levels = {0.05: '*', 0.01: '**', 0.001: '***'} #Set significance level for p-value
