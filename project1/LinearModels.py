@@ -242,8 +242,9 @@ def outreg(
         else:
             temp_df.at[se_index]=f'({temp_df.at[se_index]})' #In parentheses for 'normal' std errors
         
-        
-    temp_df = temp_df.drop('pt', level=1) #Remove our 'helper' p-values
+    
+    # Remove our 'helper' p-values
+    temp_df = temp_df.drop('pt', level=1)
     
     return temp_df
 
@@ -278,9 +279,9 @@ def serial_corr(
     # e_l are the lagged values of e.
     return estimate(e, e_l,N=N,T=T-2) #We lose two time periods
 
-def strict_exo_test(
-    x: np.array,
+def strict_exo_FE(
     y: np.array,
+    x: np.array,
     T: int,
     N: int,
     lead_var: np.array,
@@ -294,7 +295,7 @@ def strict_exo_test(
         x (np.array)        : Array of covariates (remove time-invariant covariates before proceeding)
         T (int)             : Number of time periods
         N (int)             : Number of observations
-        lead_var (np.array) : The variable to lead in FE regression
+        lead_var (np.array) : The variable(s) to lead in FE regression (Wooldridge p.325)
         year (np.array)     : Array of year variable
     
     Returns:
@@ -302,32 +303,87 @@ def strict_exo_test(
     
     '''
 
+    # Create lead matrix.
     # A lead matrix is basically an Identity matrix, 
     # but with the diagonal 'one to the right'
-
     lead = 1
     lead_mat = np.eye(T, k=lead)[:-1]
+
+    # Create a list of arrays to loop through
+    list_of_array = np.split(lead_var, lead_var.shape[1], axis=1)
+
+    # Intiate empty list to lead each column (or variable)
+    list_of_array_lead = []
+
+    # Loop through the list of arrays and lead these variables.
+    # Append to the empty list
+    for i in list_of_array:
+        list_of_array_lead.append(perm(lead_mat, i))
     
-    #Lead of var, this means we lose the last year
-    lead_out = perm(lead_mat, lead_var)
+    # Horizontally stack the arrays into one multi-dimensional array
+    lead_out = np.hstack(list_of_array_lead)
+
+    # Get the last year, as we lose this period in the estimation
     last_year = np.unique(year).max()
 
 
-    # Lead of emp var, this means we lose the last year
-    #Let's trim our matrix x and vector y so we don't have the last year  
+    # Let's trim our matrix x and vector y so we don't have the last year  
     x_exo = x[year!=last_year]
     y_exo = y[year!=last_year]
 
-    # We then 'stack horizontally' our union_lead into our matrix
-    # This adds a vector of observations - in this case our union_lead
+    # Horizontally stack the arrays x_exo and the array with our leaded (?) variables
     x_lead_FE = np.hstack((x_exo, lead_out))
 
-    #Lets demean our y
+    # Lets demean our y
     Q_T = demeaning_matrix(T-1) #Remember to subtract one time period
     y_lead_demean = perm(Q_T, y_exo)
     x_lead_demean = perm(Q_T, x_lead_FE)
 
     return estimate(y_lead_demean, x_lead_demean, transform='fe', T=T-1, N=N)
+
+def strict_exo_FD(
+    y_diff: np.array,
+    x_diff: np.array,
+    T: int,
+    N: int,
+    w: np.array,
+    year: np.array,
+):
+
+    '''
+    Args:
+        y_diff (np.array)   : Array of outcome variable (differenced)
+        x_diff (np.array)   : Array of covariates (differenced)
+        T (int)             : Number of time periods
+        N (int)             : Number of observations
+        w (np.array)        : The subset of x to include in the test (Wooldridge p.325)
+        year (np.array)     : Array of year variable
+    
+    Returns:
+        Returns estimate of this regression
+    
+    
+    
+    '''
+
+    #Make list of array to loop through
+    list_of_array = np.split(w, w.shape[1], axis=1)
+
+    #Initiate empty list
+    list_of_array_no_last_period = []
+
+    #For each column (or variable) in the aforementioned list, append the column where the obs from the last year have been removed
+    for i in list_of_array:
+        list_of_array_no_last_period.append(i[year!=year.min()])
+    
+    #Horizontally stack these arrays into one multi-dimensional array
+    #Using w as notation from Wooldridge
+    w = np.hstack(list_of_array_no_last_period)
+
+    #Stack these into one final multi-dimensional array for which we derive our results from
+    x_diff = np.hstack((x_diff,w))
+
+    return  estimate(y=y_diff, x=x_diff, transform='fd', T=T-1, N=N)
 
 def robust( x: np.array, residual: np.array, T:int) -> tuple:
     '''Calculates the robust variance estimator 
@@ -361,3 +417,7 @@ def robust( x: np.array, residual: np.array, T:int) -> tuple:
 def demeaning_matrix(T):
     Q_T = np.eye(T)-np.tile(1/T,T)
     return Q_T
+
+####################
+#TO DO: A WALD TEST#
+####################
