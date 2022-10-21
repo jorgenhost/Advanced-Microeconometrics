@@ -1,35 +1,36 @@
+cls
 cd "C:\Users\JBH\Dropbox\10_semester\Advanced Microeconometrics\project1"
 
 use "firms.dta", clear
 
 xtset firmid year
 
-xtreg ldsa lcap lemp, fe
+// Fixed effect
+xtreg ldsa lemp lcap, fe
 test lcap + lemp = 1
 
-xtreg ldsa lcap lemp F.lemp, fe //strict exogeneity
-
-
-
-
-reg ldsa lcap lemp
-test lcap + lemp = 1
-reg d.(ldsa lcap lemp), nocons //FD-est?
+// First difference
+reg d.(ldsa lemp lcap), nocons
 test d.lcap+d.lemp=1
  
- 
- 
+// Fixed effect strict exo test
+xtreg ldsa lemp lcap F.lemp F.lcap, fe
+test F.lemp F.lcap
+
+// First difference strict exo test
+reg d.(ldsa lcap lemp) lcap lemp
+test lcap lemp
+
+
 //Test for auto correlation
-xtserial ldsa lcap lemp, output //community written func
-reg d.(ldsa lcap lemp)
+quietly: reg d.(ldsa lcap lemp)
 predict eit, res
 
 gen eit_1 = l.eit
 
 reg eit eit_1, nocons
-ttest eit_1=-.5
-
-binscatter eit eit_1
+test eit_1=-.5 	// u_its are serially uncorrelated
+test eit_1=0	// u_its are a random walk
 
 use "serial_corr.dta", clear
 reg e e_1, nocons

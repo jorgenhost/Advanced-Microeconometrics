@@ -4,7 +4,7 @@ import pandas as pd
 from tabulate import tabulate
 import os
 from typing import Optional, List, Tuple, Union, Iterable
-from scipy import stats
+from scipy.stats import chi2, t
 
 
 def estimate( 
@@ -211,7 +211,7 @@ def outreg(
     se = pd.Series(results['se'].reshape(-1), index=var_labels).round(4) #Make series of standard errors
     t_stat = pd.Series(results['t_values'].reshape(-1), index=var_labels).round(4) #Make series of t-values
     p_val = pd.Series(
-                stats.t.cdf(-np.abs(t_stat),df=deg_of_frees)*2, index=var_labels).round(4) #Make series of p-values, using the deg of freedoms
+                t.cdf(-np.abs(t_stat),df=deg_of_frees)*2, index=var_labels).round(4) #Make series of p-values, using the deg of freedoms
     
     temp_df = pd.concat((beta, se, p_val), axis=1) #concatenate above into dataframe, index is the varlabels
     temp_df.columns=['beta', 'se', 'pt'] #set column names to beta, se, pt (p-values)
@@ -419,6 +419,33 @@ def demeaning_matrix(T):
     Q_T = np.eye(T)-np.tile(1/T,T)
     return Q_T
 
-####################
-#TO DO: A WALD TEST#
-####################
+def wald_test(
+    R: np.array,
+    beta_hat: np.array,
+    r: np.array,
+    Avar: np.array
+):
+
+    '''Calculates the robust Wald test statistics that converges in distribution to the Chi^2(Q) distribution with Q as degrees of freedom. NB! Careful of the correct array dimensions + defining R!
+    
+    Q = Rank(R)
+
+    Args: 
+        R               : QxK matrix of a linear hypothesis. 
+        beta_hat        : Matrix containing the estimates of beta
+        r               : The null hypothesis
+        Avar            : Asymptotic variance of beta_hat's
+    
+    Returns:
+        Returns p-value of the 
+    '''
+
+    chi_val = (R@beta_hat - r).T@la.inv(R@Avar@R.T)@(R@beta_hat-r)
+    
+    # Calculates our 'Q' that we use 
+    Q = la.matrix_rank(R)
+
+    # Calculate our p-value for our null to be true
+    p_val = chi2.sf(chi_val.item(), Q)
+
+    return p_val, chi_val.item()
