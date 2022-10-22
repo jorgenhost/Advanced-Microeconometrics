@@ -229,11 +229,11 @@ def outreg(
         se_index=temp_df.index[j]
         p_val_index=temp_df.index[k]
         if temp_df.at[p_val_index]<0.001:
-            temp_df.at[var_index]=f'{temp_df.at[var_index]}'+f'{sig_levels[0.001]}'
+            temp_df.at[var_index]=f'{temp_df.at[var_index]}'+sig_levels[0.001]
         elif temp_df.at[p_val_index]<0.01:
-            temp_df.at[var_index]=f'{temp_df.at[var_index]}'+f'{sig_levels[0.01]}'
+            temp_df.at[var_index]=f'{temp_df.at[var_index]}'+sig_levels[0.01]
         elif temp_df.at[p_val_index]<=0.05:
-            temp_df.at[var_index]=f'{temp_df.at[var_index]}'+f'{sig_levels[0.05]}'
+            temp_df.at[var_index]=f'{temp_df.at[var_index]}'+sig_levels[0.05]
         elif temp_df.at[p_val_index]>0.05:
             temp_df.at[var_index]=temp_df.at[var_index]
         
