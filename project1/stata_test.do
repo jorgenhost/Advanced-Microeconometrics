@@ -10,7 +10,11 @@ xtreg ldsa lemp lcap, fe
 test lcap + lemp = 1
 
 // First difference
-reg d.(ldsa lemp lcap), nocons
+xtreg d.(ldsa lemp lcap)
+test d.lcap+d.lemp=1
+
+// First difference (robust)
+xtreg d.(ldsa lemp lcap), robust
 test d.lcap+d.lemp=1
  
 // Fixed effect strict exo test
@@ -29,8 +33,5 @@ predict eit, res
 gen eit_1 = l.eit
 
 reg eit eit_1, nocons
-test eit_1=-.5 	// u_its are serially uncorrelated
-test eit_1=0	// u_its are a random walk
-
-use "serial_corr.dta", clear
-reg e e_1, nocons
+test eit_1=-.5 	// u_its are serially uncorrelated 	(pref FE)
+test eit_1=0	// u_its are a random walk			(pref FD)

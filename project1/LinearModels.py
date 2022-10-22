@@ -208,7 +208,7 @@ def outreg(
     deg_of_frees = results['deg_of_frees'] #Extract degrees of freedom from results dict
 
     beta = pd.Series(results['b_hat'].reshape(-1), index=var_labels).round(2) #Make series of our coeff
-    se = pd.Series(results['se'].reshape(-1), index=var_labels).round(4) #Make series of standard errors
+    se = pd.Series(results['se'].reshape(-1), index=var_labels).round(3) #Make series of standard errors
     t_stat = pd.Series(results['t_values'].reshape(-1), index=var_labels).round(4) #Make series of t-values
     p_val = pd.Series(
                 t.cdf(-np.abs(t_stat),df=deg_of_frees)*2, index=var_labels).round(4) #Make series of p-values, using the deg of freedoms
@@ -390,7 +390,11 @@ def robust( x: np.array, residual: np.array, T:int) -> tuple:
     '''Calculates the robust variance estimator 
 
     ARGS: 
-        t: number of time periods 
+        x           : Array of (N*T, K) regressors.
+        residual    : (From results dict). 
+        T           : number of time periods 
+    Returns:
+        cov, se     : Tuple of (1) asymptotic robust variance-covariance matrix and (2) heteroskedastic robust standard errors.
     '''
     # If only cross sectional, we can easily use the diagonal.
     if (not T) or (T==1):
@@ -448,4 +452,4 @@ def wald_test(
     # Calculate our p-value for our null to be true
     p_val = chi2.sf(chi_val.item(), Q)
 
-    return p_val, chi_val.item()
+    return p_val.round(2), round(chi_val.item(),2)
