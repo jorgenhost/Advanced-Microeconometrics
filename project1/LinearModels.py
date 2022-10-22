@@ -192,10 +192,10 @@ def outreg(
     
     '''
     Args:
-        Results (dict): pass the results (dict) output from the estimate()-function
-        var_labels (list): List of variable names used previously in our regression
-        name (str): the name given to the pd.Series as output
-        robust_se (bool): If robust std. errors have been used, write in brackets []
+        Results (dict)      : pass the results (dict) output from the estimate()-function
+        var_labels (list)   : List of variable names used previously in our regression
+        name (str)          : the name given to the pd.Series as output
+        robust_se (bool)    : If robust std. errors have been used, write in brackets []
     
     Returns:
         A pd.Series with variable names as index. NB! Add number of obs (N), time periods (T), regressors (K) and degrees of freedoms manually if appropriate.
@@ -229,11 +229,11 @@ def outreg(
         se_index=temp_df.index[j]
         p_val_index=temp_df.index[k]
         if temp_df.at[p_val_index]<0.001:
-            temp_df.at[var_index]=str(temp_df.at[var_index])+sig_levels[0.001]
+            temp_df.at[var_index]=f'{temp_df.at[var_index]}'+f'{sig_levels[0.001]}'
         elif temp_df.at[p_val_index]<0.01:
-            temp_df.at[var_index]=str(temp_df.at[var_index])+sig_levels[0.01]
+            temp_df.at[var_index]=f'{temp_df.at[var_index]}'+f'{sig_levels[0.01]}'
         elif temp_df.at[p_val_index]<=0.05:
-            temp_df.at[var_index]=str(temp_df.at[var_index])+sig_levels[0.05]
+            temp_df.at[var_index]=f'{temp_df.at[var_index]}'+f'{sig_levels[0.05]}'
         elif temp_df.at[p_val_index]>0.05:
             temp_df.at[var_index]=temp_df.at[var_index]
         
