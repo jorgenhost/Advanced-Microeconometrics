@@ -13,22 +13,24 @@ def estimate(
         transform='', 
         N=None, 
         T=None,
-        robust_se=False
+        se_type='normal',
+        cluster_id=None
     ) -> dict:
     """Takes some np.arrays and estimates regular OLS, FE or FD.
     
 
     Args:
-        y (np.ndarray): The dependent variable, needs to have the shape (n*t, 1)
-        x (np.ndarray): The independent variable(s). If only one independent 
+        y (np.ndarray)          : The dependent variable, needs to have the shape (n*t, 1)
+        x (np.ndarray)          : The independent variable(s). If only one independent 
         variable, then it needs to have the shape (n*t, 1).
-        transform (str, optional): Specify if estimating fe or fd, in order 
+        transform (str)         : Specify if estimating fe or fd, in order 
         to get correct variance estimation. Defaults to ''.
-        N (int, optional): Number of observations. If panel, then the 
+        N (int, optional)       : Number of observations. If panel, then the 
         number of individuals. Defaults to None.
-        T (int, optional): If panel, then the number of periods an 
-        individual is observerd. Defaults to None.
-        robust_se (bool): Use robust std errors. Default is False (use normal standard errors)
+        T (int, optional)       : If panel, then the number of periods an 
+        individual is observed. Defaults to None.
+        se_type (str)           : Options: 'robust' and 'cluster' for standard error types. Defaults to normal standard errors.
+        cluster_id (np.ndarray) : Array of clusters to loop over. 
 
     Returns:
         dict: A dictionary with the results from the ols-estimation.
@@ -36,13 +38,20 @@ def estimate(
     
     b_hat = est_ols(y,x)
     residual = y-x@b_hat
-    SSR = residual.T@residual # Fill in
+    SSR = residual.T@residual 
     SST = (y - np.mean(y)).T@(y - np.mean(y))
-    R2 = 1-SSR/SST # Fill in
+    R2 = 1-SSR/SST 
 
     sigma, cov, se, deg_of_frees = variance(transform, SSR, x, N, T)
-    if robust_se:
-        cov, se = robust(x, residual, T)
+
+    if se_type == 'normal':
+        pass
+    elif se_type == 'robust':
+        cov,se = robust(x, residual, T)
+    elif se_type == 'cluster':
+        cov,se = cluster(x, residual, T, cluster_id)
+    else: 
+        raise Exception('Invalid standard error type.')
     
     t_values = b_hat/se
 
@@ -91,19 +100,19 @@ def variance(
     K=x.shape[1]
 
     if transform in ('', 're', 'fd'):
-        sigma = SSR/(N*T-K) # Fill in
+        sigma = SSR/(N*T-K) 
         deg_of_frees = N*T-K
     elif transform.lower() == 'fe':
-        sigma = SSR/(N*(T-1)-K) # Fill in
+        sigma = SSR/(N*(T-1)-K) 
         deg_of_frees = N*(T-1)-K
     elif transform.lower() in ('be'): 
-        sigma = SSR/(N-K) # Fill in
+        sigma = SSR/(N-K) 
         deg_of_frees = N-K
     else:
         raise Exception('Invalid transform provided.')
     
-    cov =  sigma*la.inv(x.T@x) # Fill in
-    se =  np.sqrt(cov.diagonal()).reshape(-1, 1) # Fill in
+    cov =  sigma*la.inv(x.T@x) 
+    se =  np.sqrt(cov.diagonal()).reshape(-1, 1) 
     return sigma, cov, se, deg_of_frees
 
 
@@ -187,7 +196,7 @@ def outreg(
     results: dict,
     var_labels: list,
     name: str,
-    robust_se = False,
+    se_type='normal',
 ) -> pd.Series:
     
     '''
@@ -195,7 +204,7 @@ def outreg(
         Results (dict)      : pass the results (dict) output from the estimate()-function
         var_labels (list)   : List of variable names used previously in our regression
         name (str)          : the name given to the pd.Series as output
-        robust_se (bool)    : If robust std. errors have been used, write in brackets []
+        se_type (str)       : If robust std. errors have been used, write in brackets []
     
     Returns:
         A pd.Series with variable names as index. NB! Add number of obs (N), time periods (T), regressors (K) and degrees of freedoms manually if appropriate.
@@ -238,7 +247,7 @@ def outreg(
             temp_df.at[var_index]=temp_df.at[var_index]
         
         #Write standard errors 
-        if robust_se == True:
+        if se_type != 'normal':
             temp_df.at[se_index]=f'[{temp_df.at[se_index]}]' #In brackes for robust std errors
         else:
             temp_df.at[se_index]=f'({temp_df.at[se_index]})' #In parentheses for 'normal' std errors
@@ -394,7 +403,7 @@ def robust( x: np.array, residual: np.array, T:int) -> tuple:
         residual    : (From results dict). 
         T           : number of time periods 
     Returns:
-        cov, se     : Tuple of (1) asymptotic robust variance-covariance matrix and (2) heteroskedastic robust standard errors.
+        cov, se     : Tuple of (1) asymptotic variance-covariance matrix and (2) heteroskedastic robust standard errors.
     '''
     # If only cross sectional, we can easily use the diagonal.
     if (not T) or (T==1):
@@ -427,10 +436,11 @@ def wald_test(
     R: np.array,
     beta_hat: np.array,
     r: np.array,
-    Avar: np.array
+    Avar: np.array,
+    label=''
 ):
 
-    '''Calculates the robust Wald test statistics that converges in distribution to the Chi^2(Q) distribution with Q as degrees of freedom. NB! Careful of the correct array dimensions + defining R!
+    '''Calculates the Wald test statistics that converges in distribution to the Chi^2(Q) distribution with Q as degrees of freedom. NB! Careful of the correct array dimensions + defining R!
     
     Q = Rank(R)
 
@@ -445,11 +455,56 @@ def wald_test(
     '''
 
     chi_val = (R@beta_hat - r).T@la.inv(R@Avar@R.T)@(R@beta_hat-r)
+    chi_val = round(chi_val.item(),2)
     
     # Calculates our 'Q' that we use 
     Q = la.matrix_rank(R)
 
     # Calculate our p-value for our null to be true
-    p_val = chi2.sf(chi_val.item(), Q)
+    p_val = chi2.sf(chi_val, Q).round(2)
 
-    return p_val.round(2), round(chi_val.item(),2)
+    names = ['p-value', f'$\chi^2({Q})$']
+    
+    results = {label: (p_val, chi_val)}
+
+    return pd.DataFrame(results, index=names)
+
+
+def cluster(
+    x: np.array,
+    residual: np.array, 
+    T:int,
+    clusters:np.array,
+ ) -> tuple:
+    '''Calculates the cluster-robust variance estimator 
+
+    ARGS: 
+        x           : Array of (N*T, K) regressors.
+        G           : Vector of to cluster standard errors over
+        residual    : (From results dict). 
+        T           : number of time periods 
+    Returns:
+        cov, se     : Tuple of (1) asymptotic variance-covariance matrix and (2) heteroskedastic cluster robust standard errors.
+    '''
+    # If only cross sectional, we can easily use the diagonal.
+    if (not T) or (T==1):
+        Ainv = la.inv(x.T@x)
+        uhat2 = residual ** 2
+        uhat2_x = uhat2 * x # elementwise multiplication: avoids forming the diagonal matrix (RAM intensive!)
+        cov = Ainv @ (x.T@uhat2_x) @ Ainv
+    
+    # Else we loop over each individual.
+    else:
+        G = int(np.unique(clusters).shape[0])
+        K = int(x.shape[1])
+        emp = np.zeros((K, K)) # some empty array
+        
+        for i in range(G):
+            idx_i = slice(i*T, (i+1)*T) # index values for individual i 
+            omega = residual[idx_i]@residual[idx_i].T
+            emp += x[idx_i].T@omega@x[idx_i]
+
+        cov = la.inv(x.T@x)@emp@la.inv(x.T@x)
+
+    se = np.sqrt(np.diag(cov)).reshape(-1, 1)
+    return cov, se
