@@ -22,7 +22,7 @@ xtreg ldsa lemp lcap F.lemp F.lcap, fe
 test F.lemp F.lcap
 
 // First difference strict exo test
-reg d.(ldsa lcap lemp) lcap lemp
+xtreg d.(ldsa lcap lemp) lcap lemp
 test lcap lemp
 
 
