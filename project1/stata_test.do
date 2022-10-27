@@ -6,8 +6,7 @@ use "firms.dta", clear
 xtset firmid year
 
 //POLS
-xtreg ldsa lemp lcap, noconstant cluster(firmid)
-xtreg ldsa lemp lcap, robust
+reg ldsa lemp lcap, nocons robust
 
 // Fixed effect
 xtreg ldsa lemp lcap, fe
