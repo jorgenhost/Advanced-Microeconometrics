@@ -12,7 +12,7 @@ def penalty_BCCH(X_tilde,y):
 
     penalty_pilot =  ((2*c*norm.ppf(1-alpha/(2*p)))/np.sqrt(N)) * yXscale
 
-    clf_pilot = Lasso(alpha=penalty_pilot/2, fit_intercept=False)
+    clf_pilot = Lasso(alpha=penalty_pilot/2)
 
     clf_pilot.fit(X_tilde,y)
 
