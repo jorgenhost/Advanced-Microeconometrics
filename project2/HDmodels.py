@@ -37,54 +37,79 @@ def penalty_BRT(X_tilde,y):
 
 ## TO-DO ## Partialling out LASSO func
 
-def part_out_LASSO(X_tilde, Z_tilde, y, penalty=''):
+def part_out_LASSO(
+    X_tilde: np.ndarray, 
+    Z: np.ndarray, 
+    d: np.ndarray, 
+    y: np.ndarray, 
+    penalty=''):
 
-    # USE BRT
+    """Takes np.arrays of controls Z, treatment d and outcome y (non-standardized). Remember to add whole standardized X_tilde array of both treatment and controls, a requirement for POL.
+    
+
+    Args:
+        X_tilde (np.ndarray)    : The standardized  independent variable(s) of both treatment d and controls z_i. 
+        Z (np.ndarray)          : Matrix of controls z_i (non-standardized).
+        d (np.ndarray)          : Vector of treatment variable (non-standardized)
+        y (np.ndarray)          : Vector of dependent/outcome variable (non-standardized)
+        penalty (str)           : Specify penalty types
+
+    Returns:
+        POL-estimate, penalty_yz, penalty_dz, CI-POL, se_POL, N, p
+        N=obs
+        p=no. of regressors
+    """
+
+    if penalty == 'BRT':
+        penalty_func = penalty_BRT
+    elif penalty == 'BCCH':
+        penalty_func = penalty_BCCH
+    else:
+        raise Exception('Invalid penalty type.')
 
     ### STEP 0 ###
-    # Standardize initial GDP
-    B_tilde_95_rule = standardize(B_las_95_rule)
+    # Standardize treatment variable
+    # d_tilde = standardize(d) (Only for post double LASSO?)
 
     # Standardize our candidate controls z_i
-    Z_tilde_95_rule = standardize(Z_las_95_rule)
+    Z_tilde = standardize(Z)
 
     ### STEP 1 ###
-    # Calculate penalty, based on LASSOing gdp_growth (y) on controls (z_i).
-    # Lasso GDP-growth on controls z_i
-    penalty_BRT_yz = penalty_BRT(X_tilde=Z_tilde_95_rule, y=y)
-    clf_BRT_yz = Lasso(alpha=penalty_BRT_yz/2)
-    clf_BRT_yz.fit(Z_tilde_95_rule, y)
-    preds_yz = clf_BRT_yz.predict(Z_tilde_95_rule)
+    # Calculate penalty, based on LASSOing outcome variable (y) on controls (z_i).
+    penalty_yz = penalty_func(X_tilde=Z_tilde, y=y)
+    clf_BRT_yz = Lasso(alpha=penalty_yz/2) #Divide by 2 as per Lasso()-function
+    clf_BRT_yz.fit(Z_tilde, y)
+    preds_yz = clf_BRT_yz.predict(Z_tilde)
 
     # Saving residuals
     res_yz = y-preds_yz
 
     ### STEP 2 ###
-    # Calculate penalty, based on LASSOing initial GDP on controls (z_I)
-    # LASSO initial GDP on controls
-    penalty_BRT_bz = penalty_BRT(X_tilde=Z_tilde_95_rule, y=B_las_95_rule)
-    clf_BRT_bz = Lasso(alpha=penalty_BRT_bz/2)
-    clf_BRT_bz.fit(Z_tilde_95_rule, B_las_95_rule)
-    preds_bz = clf_BRT_bz.predict(Z_tilde_95_rule)
-    coefs_bz = clf_BRT_bz.coef_
+    # Calculate penalty, based on LASSOing non-standardized treatment (d) on controls (z_i)
+    penalty_dz = penalty_func(X_tilde=Z_tilde, y=d)
+    clf_BRT_dz = Lasso(alpha=penalty_dz/2)
+    clf_BRT_dz.fit(Z_tilde, d)
+    preds_dz = clf_BRT_dz.predict(Z_tilde)
+    coefs_dz = clf_BRT_dz.coef_
 
     # Saving residuals
-    res_bz = B_las_95_rule-preds_bz
+    res_dz = d-preds_dz
 
     ### STEP 3 ###
-    # Calculating estimate
-    numerator = np.sum(res_yz*res_bz)
-    denominator = np.sum(res_bz**2)
+    # Calculating estimate of treatment effect
+    numerator = np.sum(res_yz*res_dz)
+    denominator = np.sum(res_dz**2)
 
-    # Post Partialing Out LASSO estimate
-    POL_BRT = (numerator/denominator).round(2)
+    # Post Partialing Out LASSO estimate of treatment effect
+    POL = (numerator/denominator).round(2)
 
     ### STEP 4 ###
-    # Lasso GDP-growth on X=((beta,z_i))
-    penalty_BRT_yx = penalty_BRT(X_tilde_poly_95, y=y)
+    # Calculate variance
+    # Lasso outcome variable y on X=((d,z_i))
+    penalty_BRT_yx = penalty_func(X_tilde=X_tilde, y=y)
     clf_yx = Lasso(alpha=penalty_BRT_yx/2)
-    clf_yx.fit(X_tilde_poly_95, y)
-    preds_yx = clf_yx.predict(X_tilde_poly_95)
+    clf_yx.fit(X_tilde, y)
+    preds_yx = clf_yx.predict(X_tilde)
 
     coefs_POL_BRT = clf_yx.coef_
 
@@ -92,16 +117,17 @@ def part_out_LASSO(X_tilde, Z_tilde, y, penalty=''):
     res_yx = y-preds_yx
 
     #Use residuals to calculate variance
-    (N,p)=X_tilde_poly_95.shape
-    numerator = np.sum(res_bz**2*res_yz**2)/N
-    denominator = (np.sum(res_bz**2)/N)**2
-    sigma2_POL_BRT = numerator/denominator
+    (N,p)=X_tilde.shape
+    numerator = np.sum(res_dz**2*res_yz**2)/N
+    denominator = (np.sum(res_dz**2)/N)**2
+    sigma2_POL = numerator/denominator
 
     # Use variance to calculate confidence interval
     q = norm.ppf(1-0.025)
-    se_POL_BRT=np.sqrt(sigma2_POL_BRT/N).round(2)
-    CI_POL_BRT = ((POL_BRT-q*se_POL_BRT).round(2), (POL_BRT+q*se_POL_BRT).round(2))
-    return
+    se_POL=np.sqrt(sigma2_POL/N).round(2)
+    CI_POL = ((POL-q*se_POL).round(2), (POL+q*se_POL).round(2))
+
+    return POL, penalty_yz.round(2), penalty_dz.round(2), CI_POL, se_POL, N, p
 
 def standardize(X):
     X_tilde = (X-X.mean())/X.std()
