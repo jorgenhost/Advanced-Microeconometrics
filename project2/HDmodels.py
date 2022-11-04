@@ -1,6 +1,7 @@
 from scipy.stats import norm
 import numpy as np 
 from sklearn.linear_model import Lasso
+import geopandas 
 
 def penalty_BCCH(X_tilde,y):
     
@@ -233,3 +234,43 @@ def post_double_LASSO(
 def standardize(X):
     X_tilde = (X-X.mean())/X.std()
     return X_tilde
+
+world = geopandas.read_file(geopandas.datasets.get_path('naturalearth_lowres'))
+
+# Fix errors in geopandas (tsk!)
+if world.query('name == "France"').iso_a3.values[0] == '-99': 
+    world.loc[world.name == "France", 'iso_a3'] = 'FRA'
+if world.query('name == "Norway"').iso_a3.values[0] == '-99': 
+    world.loc[world.name == "Norway", 'iso_a3'] = 'NOR'
+
+def remove_bounding(ax): 
+    ax.set_yticklabels([]);
+    ax.set_xticklabels([]); 
+    ax.set_xticks([]);
+    ax.set_yticks([]);
+    for l in ['top', 'bottom', 'left', 'right']:
+        ax.spines[l].set_visible(False)
+
+def plot_world_map(var, dat, lbl=None, title=None, fname=None, **kwargs):
+    assert var in dat.columns, f'Variable "{var}" not in dat columns'
+    assert 'code' in dat.columns , f'ISO3 country variable, "code", not found in dat'
+    
+    # name for chosen variable 
+    lbl_var = var # default: just show the variable name 
+    if (not lbl is None): 
+        if isinstance(lbl, str): 
+            lbl_var = lbl 
+        elif var in lbl: 
+            lbl_var = lbl[var]
+        else: 
+            print(f'(Var "{var}" not in lbl)')
+        
+    cols = ['code'] + [var]
+    w = pd.merge(world, dat[cols], left_on='iso_a3', right_on='code')
+    ax = w.plot(var, cmap = 'BuPu', legend=True, missing_kwds={'color': 'lightgrey', 'label':'hej'},
+                 legend_kwds={'label': lbl_var,'orientation': "horizontal"}, **kwargs);
+    remove_bounding(ax)
+    if not title is None: 
+        ax.set_title(title)
+    if not fname is None: 
+        plt.savefig(fname)
