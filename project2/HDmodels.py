@@ -9,9 +9,9 @@ def penalty_BCCH(X_tilde,y):
     c = 1.1
     alpha = 0.05
 
-    yXscale = (np.max((X_tilde.T ** 2) @ ((y-np.mean(y)) ** 2) / N)) ** 0.5
+    yXscale = np.sqrt(np.max((1/N*(y-np.mean(y))**2).T@X_tilde**2))
 
-    penalty_pilot =  ((2*c*norm.ppf(1-alpha/(2*p)))/np.sqrt(N)) * yXscale
+    penalty_pilot =  2*c*norm.ppf(1-alpha/(2*p))/np.sqrt(N) * yXscale
 
     clf_pilot = Lasso(alpha=penalty_pilot/2)
 
@@ -22,7 +22,7 @@ def penalty_BCCH(X_tilde,y):
     eps =  y-preds
     epsXscale = (np.max((X_tilde.T ** 2) @ (eps ** 2) / N)) ** 0.5
 
-    lambda_BCCH =  ((2*c*norm.ppf(1-alpha/(2*p)))/np.sqrt(N)) * epsXscale
+    lambda_BCCH =  2*c*norm.ppf(1-alpha/(2*p))* epsXscale/np.sqrt(N)
 
     return lambda_BCCH
 
@@ -32,7 +32,7 @@ def penalty_BRT(X_tilde,y):
     c = 1.1
     alpha = 0.05
 
-    penalty_BRT= ((2*c*sigma)/np.sqrt(N))*(norm.ppf(1-alpha/(2*p)))
+    penalty_BRT= 2*c*sigma/np.sqrt(N)*norm.ppf(1-alpha/(2*p))
 
     return penalty_BRT
 
@@ -40,7 +40,7 @@ def penalty_BRT(X_tilde,y):
 
 def part_out_LASSO(
     X_tilde: np.ndarray, 
-    Z: np.ndarray, 
+    Z_tilde: np.ndarray, 
     d: np.ndarray, 
     y: np.ndarray, 
     penalty=''):
@@ -73,14 +73,15 @@ def part_out_LASSO(
     # d_tilde = standardize(d) (Only for post double LASSO?)
 
     # Standardize our candidate controls z_i
-    Z_tilde = standardize(Z)
+    # Z_tilde = standardize(Z)
 
     ### STEP 1 ###
     # Calculate penalty, based on LASSOing outcome variable (y) on controls (z_i).
     penalty_yz = penalty_func(X_tilde=Z_tilde, y=y)
-    clf_BRT_yz = Lasso(alpha=penalty_yz/2) #Divide by 2 as per Lasso()-function
-    clf_BRT_yz.fit(Z_tilde, y)
-    preds_yz = clf_BRT_yz.predict(Z_tilde)
+    clf_yz = Lasso(alpha=penalty_yz/2) #Divide by 2 as per Lasso()-function
+    clf_yz.fit(Z_tilde, y)
+    preds_yz = clf_yz.predict(Z_tilde)
+    coefs_yz = clf_yz.coef_
 
     # Saving residuals
     res_yz = y-preds_yz
@@ -88,10 +89,10 @@ def part_out_LASSO(
     ### STEP 2 ###
     # Calculate penalty, based on LASSOing non-standardized treatment (d) on controls (z_i)
     penalty_dz = penalty_func(X_tilde=Z_tilde, y=d)
-    clf_BRT_dz = Lasso(alpha=penalty_dz/2)
-    clf_BRT_dz.fit(Z_tilde, d)
-    preds_dz = clf_BRT_dz.predict(Z_tilde)
-    coefs_dz = clf_BRT_dz.coef_
+    clf_dz = Lasso(alpha=penalty_dz/2)
+    clf_dz.fit(Z_tilde, d)
+    preds_dz = clf_dz.predict(Z_tilde)
+    ## coefs_dz = clf_dz.coef_
 
     # Saving residuals
     res_dz = d-preds_dz
@@ -128,11 +129,11 @@ def part_out_LASSO(
     se_POL=np.sqrt(sigma2_POL/N).round(2)
     CI_POL = ((POL-q*se_POL).round(2), (POL+q*se_POL).round(2))
 
-    return POL, penalty_yz.round(2), penalty_dz.round(2), CI_POL, se_POL, N, p
+    return POL, penalty_yz.round(2), penalty_dz.round(2), CI_POL, se_POL, coefs_yz, N, p
 
 def post_double_LASSO(
     X_tilde: np.ndarray, 
-    Z: np.ndarray, 
+    Z_tilde: np.ndarray, 
     d: np.ndarray, 
     y: np.ndarray, 
     penalty=''):
@@ -164,15 +165,13 @@ def post_double_LASSO(
     # Standardize treatment variable
     d_tilde = standardize(d) 
 
-    # Standardize our candidate controls z_i
-    Z_tilde = standardize(Z)
-
     ### STEP 1 ###
-    # Calculate penalty, based on LASSOing outcome variable (y) on controls (z_i).
+    # Calculate penalty, based on LASSOing non-standardized outcome variable (y) on standardized controls (z_i).
     penalty_yz = penalty_func(X_tilde=Z_tilde, y=y)
-    clf_BRT_yz = Lasso(alpha=penalty_yz/2) #Divide by 2 as per Lasso()-function
-    clf_BRT_yz.fit(Z_tilde, y)
-    preds_yz = clf_BRT_yz.predict(Z_tilde)
+    clf_yz = Lasso(alpha=penalty_yz/2) #Divide by 2 as per Lasso()-function
+    clf_yz.fit(Z_tilde, y)
+    preds_yz = clf_yz.predict(Z_tilde)
+    coefs_yz = clf_yz.coef_
 
     # Saving residuals
     res_yz = y-preds_yz
@@ -180,10 +179,10 @@ def post_double_LASSO(
     ### STEP 2 ###
     # Calculate penalty, based on LASSOing non-standardized treatment (d) on controls (z_i)
     penalty_dz = penalty_func(X_tilde=Z_tilde, y=d)
-    clf_BRT_dz = Lasso(alpha=penalty_dz/2)
-    clf_BRT_dz.fit(Z_tilde, d)
-    preds_dz = clf_BRT_dz.predict(Z_tilde)
-    coefs_dz = clf_BRT_dz.coef_
+    clf_dz = Lasso(alpha=penalty_dz/2)
+    clf_dz.fit(Z_tilde, d)
+    preds_dz = clf_dz.predict(Z_tilde)
+    #coefs_dz = clf_dz.coef_
 
     # Saving residuals
     res_dz = d-preds_dz
@@ -229,48 +228,10 @@ def post_double_LASSO(
     se_PDL=np.sqrt(sigma2_POL/N).round(2)
     CI_PDL = ((PDL-q*se_PDL).round(2), (PDL+q*se_PDL).round(2))
 
-    return PDL, penalty_yz.round(2), penalty_dz.round(2), CI_PDL, se_PDL, N, p
+    return PDL, penalty_yz.round(2), penalty_dz.round(2), CI_PDL, se_PDL, coefs_yz, N, p
 
 def standardize(X):
-    X_tilde = (X-X.mean())/X.std()
-    return X_tilde
-
-world = geopandas.read_file(geopandas.datasets.get_path('naturalearth_lowres'))
-
-# Fix errors in geopandas (tsk!)
-if world.query('name == "France"').iso_a3.values[0] == '-99': 
-    world.loc[world.name == "France", 'iso_a3'] = 'FRA'
-if world.query('name == "Norway"').iso_a3.values[0] == '-99': 
-    world.loc[world.name == "Norway", 'iso_a3'] = 'NOR'
-
-def remove_bounding(ax): 
-    ax.set_yticklabels([]);
-    ax.set_xticklabels([]); 
-    ax.set_xticks([]);
-    ax.set_yticks([]);
-    for l in ['top', 'bottom', 'left', 'right']:
-        ax.spines[l].set_visible(False)
-
-def plot_world_map(var, dat, lbl=None, title=None, fname=None, **kwargs):
-    assert var in dat.columns, f'Variable "{var}" not in dat columns'
-    assert 'code' in dat.columns , f'ISO3 country variable, "code", not found in dat'
-    
-    # name for chosen variable 
-    lbl_var = var # default: just show the variable name 
-    if (not lbl is None): 
-        if isinstance(lbl, str): 
-            lbl_var = lbl 
-        elif var in lbl: 
-            lbl_var = lbl[var]
-        else: 
-            print(f'(Var "{var}" not in lbl)')
-        
-    cols = ['code'] + [var]
-    w = pd.merge(world, dat[cols], left_on='iso_a3', right_on='code')
-    ax = w.plot(var, cmap = 'BuPu', legend=True, missing_kwds={'color': 'lightgrey', 'label':'hej'},
-                 legend_kwds={'label': lbl_var,'orientation': "horizontal"}, **kwargs);
-    remove_bounding(ax)
-    if not title is None: 
-        ax.set_title(title)
-    if not fname is None: 
-        plt.savefig(fname)
+    X_mean = X.mean()
+    X_std = X.std()
+    X_stan = (X-X_mean)/X_std
+    return X_stan
