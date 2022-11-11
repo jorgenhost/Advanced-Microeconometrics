@@ -105,7 +105,7 @@ def variance(
     if cov.all == None: 
         pass # this allows the file to be called before we have computed "cov" above :) 
     else: 
-        se = np.sqrt(cov.diagonal()) # FILL IN: formula that uses the matrix cov 
+        se = np.sqrt(cov.diagonal()) # FILL IN: formula that uses the matrix cov (needs to be 1-dimensional?)
 
     return cov, se
 

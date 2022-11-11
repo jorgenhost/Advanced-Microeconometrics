@@ -70,10 +70,14 @@ def starting_values(y, x):
     return starting_vals
 
 
-def sim_data(N: int, theta, rng):    
+def sim_data(
+    N: int, 
+    theta: np.ndarray,
+    rng: np.random):    
+
     # Unpack parameters
-    K = len(theta) - 1
-    beta = theta[:K]
+    K = len(theta) - 1 #Why -1? For some reason, it has been decided to 'np.vstack' first the theta's, then the standard deviation (\sigma) in the code. Not sure why? See below
+    beta = theta[:K] 
     sigma = theta[-1]
     
     # Simalute x-values as N(0,1) and add a constant term 
