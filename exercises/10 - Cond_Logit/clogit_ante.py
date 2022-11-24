@@ -11,7 +11,7 @@ def q(theta, y, x):
     Returns
         (N,) vector. 
     '''
-    return None # Fill in 
+    return -loglikelihood(theta,y,x) # Fill in 
 
 def starting_values(y, x): 
     '''starting_values(): returns a "reasonable" vector of parameters from which to start estimation
@@ -19,7 +19,7 @@ def starting_values(y, x):
         theta0: (K,) vector of starting values for estimation
     '''
     N,J,K = x.shape
-    theta0 =  None # Fill in 
+    theta0 = np.zeros(K,) # Fill in 
     return theta0
 
 def util(theta, x, MAXRESCALE:bool=True): 
@@ -36,12 +36,12 @@ def util(theta, x, MAXRESCALE:bool=True):
     N,J,K = x.shape 
 
     # deterministic utility 
-    v = None # Fill in 
+    v = x@theta # Fill in 
 
     if MAXRESCALE: 
         # subtract the row-max from each observation
         # keepdims maintains the second dimension, (N,1), so broadcasting is successful
-        v -=  None
+        v -=  np.max(x@theta, keepdims=True)
     
     return v 
 
@@ -59,17 +59,17 @@ def loglikelihood(theta, y, x):
     N,J,K = x.shape 
 
     # deterministic utility 
-    v = None # Fill in (use util function)
+    v = util(theta, x) # Fill in (use util function)
 
     # denominator 
-    denom = None # Fill in
+    denom = np.exp(x@theta) # Fill in
     assert denom.ndim == 1 # make sure denom is 1-dimensional so that we can subtract it later 
 
     # utility at chosen alternative 
     v_i = None # Fill in evaluate v at cols indicated by y 
 
     # likelihood 
-    ll_i = None # Fill in 
+    ll_i = x@theta-np.log(np.exp(x@theta)) # Fill in 
     assert ll_i.ndim == 1 # we should return an (N,) vector 
 
     return ll_i 
@@ -88,14 +88,15 @@ def choice_prob(theta, x):
     N, J, K = x.shape
     
     # deterministic utility 
-    v = None # Fill in (using util())
-    
+    v = util(theta,x) # Fill in (using util())
+
     # denominator 
-    denom = None # Fill in
+    temp = np.exp(x@theta)
+    denom = np.sum(temp,axis=1).reshape(-1,1) # Fill in
     assert denom.ndim == 2 # denom must be (N,1) so we can divide an (N,J) matrix with it without broadcasting errors
-    
+
     # Conditional choice probabilites
-    ccp = None # Fill in 
+    ccp = np.exp(v)/denom # Fill in 
     
     return ccp
 
@@ -117,21 +118,21 @@ def sim_data(N: int, theta: np.ndarray, J: int) -> tuple:
     K = theta.size
     
     # 1. draw explanatory variables 
-    x = None # Fill in, use np.random.normal(size=())
+    x = np.random.normal(size=(N,J,K)) # Fill in, use np.random.normal(size=())
 
     # 2. draw error term 
-    uni = None # Fill in random uniforms
-    e =  None # Fill in: use inverse extreme value CDF
+    uni = np.random.normal(size=(N,J)) # Fill in random uniforms
+    e =  genextreme.ppf(uni, c=0) # Fill in: use inverse extreme value CDF
 
     # 3. deterministic part of utility (N,J)
-    v = None # Fill in 
+    v = x@theta # Fill in 
 
     # 4. full utility 
-    u = None # Fill in 
+    u = v+e # Fill in 
     
     # 5. chosen alternative
     # Find which choice that maximises value: this is the discrete choice 
-    y = None # Fill in, use np.argmax(axis=1)
+    y = np.argmax(u, axis=1) # Fill in, use np.argmax(axis=1)
     assert y.ndim == 1 # y must be 1D
     
     return y,x
