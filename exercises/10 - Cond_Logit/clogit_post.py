@@ -3,24 +3,13 @@ from scipy.stats import genextreme
 
 def q(theta, y, x): 
     '''q: Criterion function, passed to estimation.estimate().
-    Args. 
-        theta: (K,) vector of parameters 
-        x: (N,J,K) matrix of covariates 
-        y: (N,) vector of outcomes (integers in 0, 1, ..., J)
-
-    Returns
-        (N,) vector. 
     '''
-    return -loglikelihood(theta,y,x) # Fill in 
+    return -loglikelihood(theta, y, x)
 
 def starting_values(y, x): 
-    '''starting_values(): returns a "reasonable" vector of parameters from which to start estimation
-    Returns
-        theta0: (K,) vector of starting values for estimation
-    '''
-    N,J,K=x.shape
-    theta0 = np.zeros((K,)) # Fill in 
-    return theta0
+    N,J,K = x.shape
+    theta = np.zeros((K,))
+    return theta
 
 def util(theta, x, MAXRESCALE:bool=True): 
     '''util: compute the deterministic part of utility, v, and max-rescale it
@@ -36,12 +25,11 @@ def util(theta, x, MAXRESCALE:bool=True):
     N,J,K = x.shape 
 
     # deterministic utility 
-    v = x@theta # Fill in 
+    v = x @ theta # (N,J) 
 
     if MAXRESCALE: 
         # subtract the row-max from each observation
-        # keepdims maintains the second dimension, (N,1), so broadcasting is successful
-        v -=  v.max(axis=1, keepdims=True)
+        v -= v.max(axis=1, keepdims=True)  # keepdims maintains the second dimension, (N,1), so broadcasting is successful
     
     return v 
 
@@ -50,7 +38,7 @@ def loglikelihood(theta, y, x):
     Args. 
         theta: (K,) vector of parameters 
         x: (N,J,K) matrix of covariates 
-        y: (N,) vector of outcomes (integers in 0, 1, ..., J-1)
+        y: (N,) vector of outcomes (integers in 0, 1, ..., J)
     
     Returns
         ll_i: (N,) vector of loglikelihood contributions
@@ -59,22 +47,18 @@ def loglikelihood(theta, y, x):
     N,J,K = x.shape 
 
     # deterministic utility 
-    v = util(theta, x) # Fill in (use util function)
+    v = util(theta, x)
 
     # denominator 
-    denom = np.exp(v).sum(axis=1) # Fill in
-    assert denom.ndim == 1 # make sure denom is 1-dimensional so that we can subtract it later 
+    denom = np.exp(v).sum(axis=1) # NOT keepdims! (N,)
 
     # utility at chosen alternative 
-    # Fill in evaluate v at cols indicated by y 
+    v_i = v[np.arange(N), y]
 
-    v_i = v[range(N),y]
+    # likelihood 
+    ll_i = v_i - np.log(denom) # difference between two 1-dimensional arrays 
 
-    ll_i = v_i-np.log(denom) # Fill in 
-    assert ll_i.ndim == 1 # we should return an (N,) vector 
-
-    return ll_i
-
+    return ll_i 
 
 def choice_prob(theta, x):
     '''choice_prob(): Computes the (N,J) matrix of choice probabilities 
@@ -89,17 +73,15 @@ def choice_prob(theta, x):
     N, J, K = x.shape
     
     # deterministic utility 
-    v = util(theta,x) # Fill in (using util())
-
+    v = util(theta, x)
+    
     # denominator 
-    denom = np.exp(v).sum(axis=1, keepdims=True) # axis=1, since I'm summing over columns, i.e. the "J"-cars
-    assert denom.ndim == 2 # denom must be (N,1) so we can divide an (N,J) matrix with it without broadcasting errors
-
+    denom = np.exp(v).sum(axis=1, keepdims=True) # (N,1)
+    
     # Conditional choice probabilites
-    ccp = np.exp(v)/denom # np.exp(v) does max-rescaling - important!!
+    ccp = np.exp(v) / denom
     
     return ccp
-
 
 def sim_data(N: int, theta: np.ndarray, J: int) -> tuple:
     """Takes input values N and J to specify the shape of the output data. The
@@ -118,22 +100,20 @@ def sim_data(N: int, theta: np.ndarray, J: int) -> tuple:
     K = theta.size
     
     # 1. draw explanatory variables 
-    x = np.random.normal(size=(N,J,K)) # Fill in, use np.random.normal(size=())
+    x = np.random.normal(size=(N, J, K))
 
     # 2. draw error term 
-    uni = np.random.uniform(size=(N,J)) # Fill in random uniforms
-    e =  genextreme.ppf(uni, c=0) # Fill in: use inverse extreme value CDF
-
+    uni = np.random.uniform(size=(N, J))
+    e = genextreme.ppf(uni, c=0)
 
     # 3. deterministic part of utility (N,J)
-    v = x@theta # Fill in 
+    v = x @ theta
 
     # 4. full utility 
-    u = v+e # Fill in 
+    u = v + e
     
     # 5. chosen alternative
     # Find which choice that maximises value: this is the discrete choice 
-    y = np.argmax(u, axis=1) # Fill in, use np.argmax(axis=1)
-    assert y.ndim == 1 # y must be 1D
+    y = u.argmax(axis=1)
     
     return y,x
