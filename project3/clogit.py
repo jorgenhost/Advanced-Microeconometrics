@@ -71,6 +71,31 @@ def loglikelihood(theta, y, x):
     v_i = v[range(N),y]
 
     ll_i = v_i-np.log(denom) # Fill in 
+
+    assert ll_i.ndim == 1 # we should return an (N,) vector 
+
+    return ll_i
+
+def loglikelihood2(theta, y, x): 
+    '''loglikelihood()
+    Args. 
+        theta: (K,) vector of parameters 
+        x: (N,J,K) matrix of covariates 
+        y: (N,) vector of outcomes (integers in 0, 1, ..., J-1)
+    
+    Returns
+        ll_i: (N,) vector of loglikelihood contributions
+    '''
+    assert theta.ndim == 1 
+    N,J,K = x.shape 
+
+    ccp = choice_prob(theta, x)
+
+    ll_i = y.T @ np.log(ccp)
+
+    #ll_i = shares_ij.T @ np.log(ccp)
+    # How do you interpret the notation in the assignment??
+
     assert ll_i.ndim == 1 # we should return an (N,) vector 
 
     return ll_i
