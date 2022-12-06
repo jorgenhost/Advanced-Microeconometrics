@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.stats import genextreme
+import pandas as pd
 
 def q(theta, y, x): 
     '''q: Criterion function, passed to estimation.estimate().
@@ -12,6 +13,17 @@ def q(theta, y, x):
         (N,) vector. 
     '''
     return -loglikelihood(theta,y,x) # Fill in 
+
+def q2(theta, y, x): 
+    '''q: Criterion function, passed to estimation.estimate().
+    Args. 
+        theta: (K,) vector of parameters 
+        y: NB!! OBSERVED market shares/conditional choice prob (N,J)
+
+    Returns
+        (N,) vector. 
+    '''
+    return -loglikelihood2(theta,y,x) # Fill in 
 
 def starting_values(y, x): 
     '''starting_values(): returns a "reasonable" vector of parameters from which to start estimation
@@ -81,7 +93,7 @@ def loglikelihood2(theta, y, x):
     Args. 
         theta: (K,) vector of parameters 
         x: (N,J,K) matrix of covariates 
-        y: (N,) vector of outcomes (integers in 0, 1, ..., J-1)
+        y: NB!! OBSERVED market shares/conditional choice prob (N,J)
     
     Returns
         ll_i: (N,) vector of loglikelihood contributions
@@ -91,10 +103,7 @@ def loglikelihood2(theta, y, x):
 
     ccp = choice_prob(theta, x)
 
-    ll_i = y.T @ np.log(ccp)
-
-    #ll_i = shares_ij.T @ np.log(ccp)
-    # How do you interpret the notation in the assignment??
+    ll_i = np.sum(y*np.log(ccp),axis=1, keepdims=False) #Conducting element-wise multiplication and summing over columns (car alternatives)
 
     assert ll_i.ndim == 1 # we should return an (N,) vector 
 
