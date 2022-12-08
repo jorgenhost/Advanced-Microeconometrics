@@ -171,3 +171,65 @@ def sim_data(N: int, theta: np.ndarray, J: int) -> tuple:
     assert y.ndim == 1 # y must be 1D
     
     return y,x
+
+def outreg(
+    results: dict,
+    var_labels: list,
+    name: str,
+) -> pd.Series:
+    
+    '''
+    Args:
+        Results (dict)      : pass the results (dict) output from the estimate()-function
+        var_labels (list)   : List of variable names used previously in our regression
+        name (str)          : the name given to the pd.Series as output
+        se_type (str)       : If robust std. errors have been used, write in brackets []
+    
+    Returns:
+        A pd.Series with variable names as index. NB! Add number of obs (N), time periods (T), regressors (K) and degrees of freedoms manually if appropriate.
+        Ideally, pass one result at a time, and then merge with pandas later on.
+        When merging, use 'outer' as method. In this case, it picks up all labels defined from different estimations
+    
+    '''
+    sig_levels = {0.1: '*', 0.05: '**', 0.01: '***'} #Set significance level for p-value
+    
+
+    theta = pd.Series(results['theta_hat'].reshape(-1), index=var_labels).round(2) #Make series of our coeff
+    se = pd.Series(results['se'].reshape(-1), index=var_labels).round(3) #Make series of standard errors
+    t_stat = pd.Series(abs(results['t-stat'].reshape(-1)), index=var_labels).round(4) #Make series of t-values
+    
+    temp_df = pd.concat((theta, se, t_stat), axis=1) #concatenate above into dataframe, index is the varlabels
+    temp_df.columns=['theta', 'se', 't_stat'] #set column names to beta, se, pt (p-values)
+    temp_df=temp_df.stack() #Stack it so we make a multiindex
+    temp_df.name=name #Have to name the series
+
+    #Defining i, j, k
+    # i: index position of our coeffs/var_labels
+    # j: index position of our standard errors
+    # k: index position of our p-values
+    # -> loop through these in increments of 3 and add stars for significance levels
+
+    for i,j,k in zip(range(0,len(temp_df-2),3), range(1, len(temp_df-1),3), range(2,len(temp_df),3)):
+
+        var_index=temp_df.index[i]
+
+        se_index=temp_df.index[j]
+
+        t_stat_index=temp_df.index[k]
+
+        if temp_df.at[t_stat_index]>2.576:
+            temp_df.at[var_index]=f'{temp_df.at[var_index]}'+sig_levels[0.01]
+        elif temp_df.at[t_stat_index]>=1.96:
+            temp_df.at[var_index]=f'{temp_df.at[var_index]}'+sig_levels[0.05]
+        elif temp_df.at[t_stat_index]>1.645:
+            temp_df.at[var_index]=f'{temp_df.at[var_index]}'+sig_levels[0.1]
+        else:
+            temp_df.at[var_index]=f'{temp_df.at[var_index]}'
+
+        temp_df.at[se_index]=f'({temp_df.at[se_index]})' #In parentheses for 'normal' std errors
+        
+    
+    # Remove our 'helper' t-values
+    temp_df = temp_df.drop('t_stat', level=1)
+    
+    return temp_df

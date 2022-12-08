@@ -100,7 +100,7 @@ def variance(
         s = centered_grad(f_q, thetahat)
         B = (s.T@s)/N
     if cov_type in ['Hessian', 'Sandwich']: 
-        H = hessian(f_q, thetahat) #Check estimation.py file -> this would be wrong?
+        H = hessian(f_q, thetahat)
         A = H/N
     
     # cov: P*P covariance matrix of theta 
