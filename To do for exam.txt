@@ -1,3 +1,5 @@
 code non-linear wald test (On Jesper's slides somewhere)
 
 Always use 'Sandwich' formula?? Check different notes
+
+Check LinearModels.py files, different deg of free adjustments for estimators

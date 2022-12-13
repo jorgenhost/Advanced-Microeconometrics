@@ -11,8 +11,7 @@ def estimate(
         y: np.ndarray, 
         x: np.ndarray, 
         transform='', 
-        N=None, 
-        T=None,
+        T: int=None,
         se_type='normal',
         cluster_id=None
     ) -> dict:
@@ -42,7 +41,7 @@ def estimate(
     SST = (y - np.mean(y)).T@(y - np.mean(y))
     R2 = 1-SSR/SST 
 
-    sigma, cov, se, deg_of_frees = variance(transform, SSR, x, N, T)
+    sigma, cov, se, deg_of_frees = variance(transform, SSR, x, T)
 
     if se_type == 'normal':
         pass
@@ -55,8 +54,8 @@ def estimate(
     
     t_values = b_hat/se
 
-    names = ['b_hat', 'se', 'sigma', 't_values', 'R2', 'cov', 'N', 'T', 'deg_of_frees']
-    results = [b_hat, se, sigma, t_values, R2, cov, N, T, deg_of_frees]
+    names = ['b_hat', 'se', 'sigma', 't_values', 'R2', 'cov', 'T', 'deg_of_frees']
+    results = [b_hat, se, sigma, t_values, R2, cov, T, deg_of_frees]
     return dict(zip(names, results))
 
     
@@ -76,7 +75,6 @@ def variance(
         transform: str, 
         SSR: float, 
         x: np.ndarray, 
-        N: int,
         T: int
     ) -> tuple :
     """Use SSR and x array to calculate different variation of the variance.
@@ -99,15 +97,20 @@ def variance(
 
     K=x.shape[1]
 
-    if transform in ('', 're', 'fd'):
-        sigma = SSR/(N*T-K) 
-        deg_of_frees = N*T-K
+    if transform in ('', 'fd', 'be'):
+        N = x.shape[0]
+    else:
+        N=x.shape[0]/T
+
+    if transform in ('', 'fd', 'be'):
+        sigma = SSR/(N-K) 
+        deg_of_frees = N-K
     elif transform.lower() == 'fe':
         sigma = SSR/(N*(T-1)-K) 
         deg_of_frees = N*(T-1)-K
-    elif transform.lower() in ('be'): 
-        sigma = SSR/(N-K) 
-        deg_of_frees = N-K
+    elif transform.lower() in ('re'): 
+        sigma = SSR/(N*T-K) 
+        deg_of_frees = N*T-K
     else:
         raise Exception('Invalid transform provided.')
     
