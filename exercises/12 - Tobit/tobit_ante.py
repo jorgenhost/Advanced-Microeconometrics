@@ -46,10 +46,15 @@ def predict(theta, x):
         E: E(y|x)
         E_pos: E(y|x, y>0) 
     '''
+    sigma = np.abs(theta[-1]) # last element in x is sigma
+    theta = theta[:-1] # First elements are coefficients, the last is sigma
     # Fill in 
-    E = None
-    Epos = None
+    E = x@theta*norm.pdf((x@theta)/sigma)+sigma*norm.cdf((x@theta)/sigma)
+    Epos = x@theta + sigma*mills_ratio((x@theta)/sigma)
     return E, Epos
+
+def mills_ratio(z): 
+    return norm.pdf(z) / norm.cdf(z)
 
 def sim_data(theta, N:int): 
     b = theta[:-1]
@@ -57,13 +62,19 @@ def sim_data(theta, N:int):
     K=b.size
 
     # FILL IN : x will need to contain 1s (a constant term) and randomly generated variables
-    xx = None # fill in
-    oo = None # fill in
-    x  = None # fill in
+    xx = np.random.normal(size=(N,K-1)) # 
+    oo = np.ones((N,1)) # constant term 
+    x  = np.hstack([oo,xx]) # full x matrix 
 
-    eps = None # fill in
-    y_lat= None # fill in
+    mean = 0
+    std_dev = sig
+    eps = np.random.normal(loc=mean, scale=std_dev, size=(N,)) # fill in
+    y_lat= x@b+eps # Latent index
     assert y_lat.ndim==1
-    y = None # fill in
+
+    # Return y>0
+    # That is: for each element in latent index, only return the value >0
+    
+    y = np.fmax(y_lat, 0) # fill in
 
     return y,x
