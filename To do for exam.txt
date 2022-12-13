@@ -1,1 +1,3 @@
 code non-linear wald test (On Jesper's slides somewhere)
+
+Always use 'Sandwich' formula?? Check different notes

@@ -5,7 +5,7 @@ from tabulate import tabulate
 
 def estimate( 
         y: np.ndarray, x: np.ndarray, transform='', t: int=None, robust_se = True
-    ) -> list:
+    ) -> dict:
     """Uses the provided estimator (mostly OLS for now, and therefore we do 
     not need to provide the estimator) to perform a regression of y on x, 
     and provides all other necessary statistics such as standard errors, 
@@ -25,7 +25,7 @@ def estimate(
         the panel, and is used for estimating the variance. Defaults to None.
 
     Returns:
-        list: Returns a dictionary with the following variables:
+        dict: Returns a dictionary with the following variables:
         'b_hat', 'se', 'sigma2', 't_values', 'R2', 'cov'
     """
     

@@ -1,11 +1,12 @@
 import numpy as np 
 from scipy.stats import norm
 from numpy import linalg as la
+import LinearModels as lm
 
 name = 'Tobit'
 
 def q(theta, y, x): 
-    return None # Fill in 
+    return -loglikelihood(theta, y, x) # Fill in 
 
 def loglikelihood(theta, y, x): 
     assert y.ndim == 1, f'y should be 1-dimensional'
@@ -15,13 +16,13 @@ def loglikelihood(theta, y, x):
     b = theta[:-1] # first K parameters are betas, the last is sigma 
     sig = np.abs(theta[-1]) # take abs() to ensure positivity (in case the optimizer decides to try it)
     
-    phi= None # fill in
+    phi= norm.pdf((y-x@b)/sig) # fill in
 
-    Phi = None # fill in
+    Phi = norm.cdf((x@b)/sig) # fill in
     Phi = np.clip(Phi, 1e-8, 1.-1e-8)
 
 
-    ll =  None # fill in, HINT: you can get indicator functions by using (y>0) and (y==0)
+    ll =  (y==0)*np.log(1-Phi)+(y>0)*np.log(1/sig*phi) # fill in, HINT: you can get indicator functions by using (y>0) and (y==0)
 
     return ll
 
@@ -32,10 +33,10 @@ def starting_values(y,x):
     Returns
         theta: K+1 array, where theta[:K] are betas, and theta[-1] is sigma (not squared)
     '''
-    N,K = None # fill in
-    b_ols = None # fill in
-    res = None # fill in
-    sig2hat = None # fill in
+    N,K = x.shape # fill in
+    b_ols = lm.est_ols(y,x)# fill in
+    res = lm.estimate(y, x) # fill in
+    sig2hat = res['sigma2'] # fill in
     sighat = np.sqrt(sig2hat) # our convention is that we estimate sigma, not sigma squared
     theta0 = np.append(b_ols, sighat)
     return theta0 
@@ -49,7 +50,7 @@ def predict(theta, x):
     sigma = np.abs(theta[-1]) # last element in x is sigma
     theta = theta[:-1] # First elements are coefficients, the last is sigma
     # Fill in 
-    E = x@theta*norm.pdf((x@theta)/sigma)+sigma*norm.cdf((x@theta)/sigma)
+    E = x@theta*norm.cdf((x@theta)/sigma)+sigma*norm.pdf((x@theta)/sigma)
     Epos = x@theta + sigma*mills_ratio((x@theta)/sigma)
     return E, Epos
 
@@ -68,6 +69,7 @@ def sim_data(theta, N:int):
 
     mean = 0
     std_dev = sig
+
     eps = np.random.normal(loc=mean, scale=std_dev, size=(N,)) # fill in
     y_lat= x@b+eps # Latent index
     assert y_lat.ndim==1
