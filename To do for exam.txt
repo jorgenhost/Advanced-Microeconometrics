@@ -3,3 +3,15 @@ code non-linear wald test (On Jesper's slides somewhere)
 Always use 'Sandwich' formula?? Check different notes
 
 Check LinearModels.py files, different deg of free adjustments for estimators
+ 
+delta-method numerically(?) - [get_se()-function] - somewhere in the problem sets, you can find numerical derivatives(?)
+
+Check dynamic completeness again
+
+SMLE + QREG-codes from lectures
+
+Theorem  12.3 in Wooldridge
+
+Derive log likelihood contributions
+
+	
