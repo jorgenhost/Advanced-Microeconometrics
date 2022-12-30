@@ -129,7 +129,7 @@ def part_out_LASSO(
     se_POL=np.sqrt(sigma2_POL/N).round(2)
     CI_POL = ((POL-q*se_POL).round(2), (POL+q*se_POL).round(2))
 
-    return POL, penalty_yz.round(2), penalty_dz.round(2), CI_POL, se_POL, coefs_yz, N, p
+    return POL, (penalty_yz/2).round(2), (penalty_dz/2).round(2), CI_POL, se_POL, coefs_yz, N, p
 
 def post_double_LASSO(
     X_tilde: np.ndarray, 
@@ -182,7 +182,7 @@ def post_double_LASSO(
     clf_dz = Lasso(alpha=penalty_dz/2)
     clf_dz.fit(Z_tilde, d)
     preds_dz = clf_dz.predict(Z_tilde)
-    #coefs_dz = clf_dz.coef_
+    coefs_dz = clf_dz.coef_
 
     # Saving residuals
     res_dz = d-preds_dz
@@ -194,7 +194,7 @@ def post_double_LASSO(
     clf_yxz = Lasso(alpha=penalty_yxz/2)
     clf_yxz.fit(X_tilde, y)
     coefs_yxz = clf_yxz.coef_
-    res_yxz = y-clf_yxz.predict(X_tilde) + d_tilde*coefs_yxz[0]
+    res_yxz = y-clf_yxz.predict(X_tilde) + d_tilde*coefs_yxz[0] #first coef in coefs_yxz is d_tilde
 
     ### STEP 3 ###
     # Calculating estimate of treatment effect
@@ -212,7 +212,7 @@ def post_double_LASSO(
     clf_yx.fit(X_tilde, y)
     preds_yx = clf_yx.predict(X_tilde)
 
-    coefs_PDL_BRT = clf_yx.coef_
+    coefs_yx = clf_yx.coef_
 
     #Save residuals
     res_yx = y-preds_yx
@@ -228,7 +228,9 @@ def post_double_LASSO(
     se_PDL=np.sqrt(sigma2_POL/N).round(2)
     CI_PDL = ((PDL-q*se_PDL).round(2), (PDL+q*se_PDL).round(2))
 
-    return PDL, penalty_yz.round(2), penalty_dz.round(2), CI_PDL, se_PDL, coefs_yz, N, p
+    # Non-zero coefs
+
+    return PDL, (penalty_yz/2).round(2), (penalty_dz/2).round(2), CI_PDL, se_PDL, coefs_yz, coefs_dz, N, p
 
 def standardize(X):
     X_mean = X.mean()
