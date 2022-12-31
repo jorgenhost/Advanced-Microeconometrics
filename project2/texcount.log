@@ -1,0 +1,13 @@
+This is TeX, Version 3.141592653 (TeX Live 2022) (preloaded format=tex 2022.10.19)  31 DEC 2022 16:44
+**texcount
+(./texcount.pl
+! You can't use `macro parameter character #' in vertical mode.
+l.1 #
+     ! /usr/bin/env perl
+? 
+! Emergency stop.
+l.1 
+    
+End of file on the terminal!
+
+No pages of output.

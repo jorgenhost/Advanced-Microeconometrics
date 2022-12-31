@@ -136,6 +136,7 @@ def post_double_LASSO(
     Z_tilde: np.ndarray, 
     d: np.ndarray, 
     y: np.ndarray, 
+    fit_intercept = True,
     penalty=''):
 
     """Takes np.arrays of controls Z, treatment d and outcome y (non-standardized). Remember to add whole standardized X_tilde array of both treatment and controls, a requirement for PDL.
@@ -168,7 +169,7 @@ def post_double_LASSO(
     ### STEP 1 ###
     # Calculate penalty, based on LASSOing non-standardized outcome variable (y) on standardized controls (z_i).
     penalty_yz = penalty_func(X_tilde=Z_tilde, y=y)
-    clf_yz = Lasso(alpha=penalty_yz/2) #Divide by 2 as per Lasso()-function
+    clf_yz = Lasso(alpha=penalty_yz/2, fit_intercept=fit_intercept) #Divide by 2 as per Lasso()-function
     clf_yz.fit(Z_tilde, y)
     preds_yz = clf_yz.predict(Z_tilde)
     coefs_yz = clf_yz.coef_
@@ -179,7 +180,7 @@ def post_double_LASSO(
     ### STEP 2 ###
     # Calculate penalty, based on LASSOing non-standardized treatment (d) on controls (z_i)
     penalty_dz = penalty_func(X_tilde=Z_tilde, y=d)
-    clf_dz = Lasso(alpha=penalty_dz/2)
+    clf_dz = Lasso(alpha=penalty_dz/2, fit_intercept=fit_intercept)
     clf_dz.fit(Z_tilde, d)
     preds_dz = clf_dz.predict(Z_tilde)
     coefs_dz = clf_dz.coef_
@@ -191,7 +192,7 @@ def post_double_LASSO(
     # Save residuals
 
     penalty_yxz = penalty_func(X_tilde=X_tilde,y=y)
-    clf_yxz = Lasso(alpha=penalty_yxz/2)
+    clf_yxz = Lasso(alpha=penalty_yxz/2, fit_intercept=fit_intercept)
     clf_yxz.fit(X_tilde, y)
     coefs_yxz = clf_yxz.coef_
     res_yxz = y-clf_yxz.predict(X_tilde) + d_tilde*coefs_yxz[0] #first coef in coefs_yxz is d_tilde
@@ -233,7 +234,4 @@ def post_double_LASSO(
     return PDL, (penalty_yz/2).round(2), (penalty_dz/2).round(2), CI_PDL, se_PDL, coefs_yz, coefs_dz, N, p
 
 def standardize(X):
-    X_mean = X.mean()
-    X_std = X.std()
-    X_stan = (X-X_mean)/X_std
-    return X_stan
+    return (X-X.mean())/X.std()

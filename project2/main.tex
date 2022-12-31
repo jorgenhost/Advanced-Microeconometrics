@@ -1,0 +1,247 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[English]{babel}
+\usepackage[a4paper, portrait, margin=2.5cm]{geometry}
+\geometry{verbose,tmargin=2.2cm,bmargin=1.9cm,lmargin=1.8cm,rmargin=1.8cm}
+\renewcommand{\baselinestretch}{1.5}
+\usepackage[font={footnotesize,it}]{footnote}
+\usepackage{setspace}
+\usepackage[toc,page]{appendix}
+\bibliographystyle{apalike}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{xcolor}
+\usepackage{bbm}
+\usepackage{mathtools,amssymb}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{booktabs, caption}
+\usepackage[labelfont=bf]{caption}
+\usepackage[margin = 0.5cm]{caption}
+\usepackage[figurename=Figure]{caption}
+\usepackage{subcaption}
+\captionsetup[table]{labelsep=colon,labelfont={bf,it},textfont=it}
+\captionsetup[figure]{labelsep=colon,justification=raggedright,labelfont={bf,it},textfont=it}
+\usepackage{longtable}
+\usepackage{adjustbox}
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage[final]{pdfpages}
+\usepackage{import}
+\usepackage{subfiles}
+\usepackage{amsmath}
+\usepackage{bbm}
+\usepackage{lipsum}
+\usepackage{rotating}
+\usepackage[round]{natbib}   % omit 'round' option if you prefer square brackets
+\usepackage[linktoc=all]{hyperref}
+\hypersetup{hidelinks}
+\usepackage{enumitem}
+\setlength{\parindent}{2em}
+\usepackage{url}
+\usepackage{verbatim}
+\usepackage{titlesec}
+\renewcommand{\arraystretch}{0.75}
+
+\usepackage{threeparttable}
+\renewcommand{\tablenotes}{\setlength\labelsep{0pt}}
+\renewcommand{\tablenotes}{\vspace{-.5em}}
+\renewcommand{\tablenotes}{\setstretch{1}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{Astrid Fugleholm, Jacob Strabo, \& Jørgen Høst}
+\lhead{Advanced Microeconometrics}
+\fancyfoot[C]{Page \thepage\ of \pageref{LastPage}}
+
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+\renewcommand{\tablenotes}{\setlength\labelsep{0pt}}
+\renewcommand{\tablenotes}{\vspace{-.5em}}
+\renewcommand{\tablenotes}{\setstretch{1}}
+
+\title{AME Project 2: High-dimensional Linear Models and Convergence in Economic Growth}
+\author{asfugleholm}
+\date{October 2022}
+
+\begin{document}
+
+% Changing font of section titles
+\titleformat{\section}
+  {\normalfont\Large\scshape}{\thesection}{1em}{}
+\titleformat{\subsection}
+  {\normalfont\large\scshape}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\scshape}{\thesubsubsection}{1em}{}
+
+\subfile{Title}
+
+
+
+\section{Introduction}
+Can developing countries expect to catch up to developed countries in terms of economic growth? Or does it require them to make institutional, cultural, or structural changes to their economies? It has been the agenda of many economic researchers to pin-point the determinants of economic growth for centuries. The insights produced play a crucial role in core assumptions of economic models on which world-wide economic policy is based. For the world economy as a whole to grow at its full potential, it is relevant for both developing and developed countries to know whether we can count on the former experiencing catch-up growth. In this paper, we thus evaluate the hypothesis of conditional convergence in a high-dimensional setting, by using a Post Double LASSO Model. Our findings suggests that countries with a lower initial GDP can expect a higher GDP growth than countries with an initial high GDP.
+
+\section{Data}
+We use cross section data for $N=214$ countries with observations on $85$ characteristics regarding geography, resources, genetic diversity, institutions, history, religion, danger, and education. Our outcome variable is the annual growth rate of GDP per capita, which is only observed for $N=102$ of the countries. As the aim of our analysis is to examine the relationship between growth and initial level of GDP, the log of initial GDP per capita is our main variable of interest. 
+
+\subfile{Figures/Correlations}
+
+\textit{Figure \ref{fig:correlations}} shows correlations between the growth rate in GDP per capita on the one hand and initial GDP, distance to nearest waterway, initial population, and temperature on the other. 
+It suggests that countries with a lower initial level of GDP, larger initial population, easy access to water, and cold weather experience higher GDP growth. Hence, factors related to the size of the workforce and geography are, in addition to initial GDP, important determinants of GDP growth and may even drive the negative correlation between initial level and growth rate of GDP. 
+
+\subfile{Figures/Heatmaps}
+
+\textit{Figure \ref{fig:heatmaps}} shows heat maps of the annual growth rate of GDP, log of initial GDP, annual population growth rate, and investment rate in countries in our sample. 
+\textit{Figures \ref{fig:gdp_growth}-\ref{fig:lgdp_initial}} illustrate that countries with a high initial level of GDP (e.g., the US, Norway, and Australia) relative to others (e.g., China and India) experienced a lower annual growth in GDP, and vice versa. 
+In addition, \textit{figure \ref{fig:pop_growth}-\ref{fig:investment_rate}} demonstrate that a high investment rate and low population growth are important drivers of growth in some countries (e.g., China and India). 
+
+In sum, \textit{figure \ref{fig:correlations}-\ref{fig:heatmaps}} show that factors related to workforce size, geography, and investments are, in addition to initial GDP, important determinants of GDP growth. Geographical characteristics likely impact GDP in 1970 and thus drive its negative correlation with GDP growth. Hence, it is not ex ante clear that countries with a lower initial GDP will experience a higher GDP growth. 
+
+% \textit{Figure \ref{fig:lgdp_initial_growth}} display a slight negative correlation between initial level and growth rate of GDP, supporting our hypothesis of convergence. 
+% \textit{Figure \ref{fig:distcr_growth}} illustrate a modest positive correlation between initial population and GDP growth, suggesting that countries with a larger initial population experience a higher growth rate of GDP in the future. 
+% The correlation between distance to nearest waterway and GDP growth displayed in \textit{figure \ref{fig:pop_initial_growth}} indicate that countries with easy access to water experience a higher GDP growth. 
+% Lastly, the correlation between average temperature and GDP growth shown in \textit{figure \ref{fig:temp_growth}} point to lower temperatures experiencing a higher GDP growth. 
+
+% It is evident from \textit{figure \ref{fig:gdp_growth}} that the BRICS (Brazil, Russia, India, China, and South Africa) countries have experienced a particularly high growth rate. 
+% \textit{Figure \ref{fig:lgdp_initial}} illustrate that countries in North and South America and Europe as well as Saudi Arabia, Japan, and Australia had a notably higher level of GDP in 1970. 
+% \textit{Figure \ref{fig:pop_growth}} shows that Africa and the Middle East have experienced the highest population growth rates during the period 1970-2020. 
+% \textit{Figure \ref{fig:investment_rate}} demonstrate that Greenland, Iran, China, Mongolia, and several countries in Africa are among those with the highest annual investment rate. 
+
+\section{Economic Growth}
+The hypotheses of conditional convergence is that, in the long run, all countries with similar characteristics end up on the same growth path implying that those with an initially low level of GDP experience a higher growth rate of GDP, and vice versa. 
+The relation between growth rate and initial level of GDP can be explored following \cite{Barro_1991} in setting up a regression for country $i$
+\begin{equation}
+\label{eq:main_regression}
+    g_i=\beta y_{i0} + \mathbf{z}_i \mathbf{\gamma} + u_i, ~~~E[u_i|y_{i0},\mathbf{z}_i]=0,
+\end{equation}
+where $g_i$ is the growth rate of GDP; $y_{i0}$ the log of initial level of GDP per capita; $\mathbf{z}_i$ a vector of control variables; and $u_i$, the error term capturing all other unobserved factors affecting $g_i$. Our parameter of interest is $\beta$ capturing the effect of initial level on growth rate of GDP with $\beta<0$ implying a negative relation between initial level and growth rate of GDP ($\beta$-convergence). Testing the hypothesis of conditional convergence thus amounts to testing the null and alternative hypotheses
+\begin{equation}
+    \label{eq:Hypotheses}
+    \mathcal{H}_0: \beta=0 \quad \text{and} \quad \mathcal{H}_A: \beta<0
+\end{equation}
+using a one-sided $t$-test, which is asymptotically normally distributed under the null. To estimate $\beta$ in (\ref{eq:main_regression}), we must choose a set of controls, $\mathbf{z}_i$. To do this, we take an agnostic approach in including potential control variables. First, we discard those variables that have less than 95\% of GDP growth observed. Second, we add interactions and squared terms to investigate non-linear effects. \textcolor{red}{This leaves us with a dataset of $n=92$ countries and $p=405$ regressors.}
+
+\section{Econometric Model}
+When choosing a suitable model to estimate the growth rate, a natural starting point is the OLS estimator, where each of the coefficients is found as:
+\begin{equation}
+    \hat{\mathbf{b}} = \text{argmin} \frac{1}{n} \sum_{i=1}^{n}(g_i - \mathbf{X_i}\mathbf{b})^{2} 
+\end{equation}
+Where $\mathbf{X_i}=(y_{i0},\mathbf{z_i})$ is a composite $n \times p$ matrix of our population regressors, $\mathbf{b}=(\beta, \mathbf{\gamma})$ is a $p \times 1$ vector of population coefficients and $g_i$ is $n \times 1$ population vector of the outcome. A key component of the OLS estimator is full invertibility, which breaks down whenever we have more candidate regressors $p$ than observations $n$. Further, with a fixed $n$ number of countries, the average prediction error of OLS no longer converges to zero in an asymptotic sense:
+
+\begin{equation}
+    E\left[\frac{1}{N}\sum_{i=1}^{µn}(\mathbf{X}_i\hat{\mathbf{b}}-\mathbf{X}_i\mathbf{b})^{2}\right] = \frac{\sigma^{2}p}{n}
+\end{equation}
+
+So to do inference when $p>n$, we need a method of 'shutting down' potentially unimportant regressors, and find the best fitted linear model to explain growth. One such is the Least Absolute Shrinkage and Selection Operator (LASSO):
+\begin{equation}
+    \hat{\mathbf{b}} = \underset{\left(b_0, \mathbf{b}\right) \in \mathbf{R}^{1+p}}{\operatorname{argmin}} \frac{1}{n} \sum_{i=1}^{n}((g_i -\underbrace{b_0}_{\text{intercept}}- \mathbf{\Tilde{X}_i}\mathbf{b})^{2} + \lambda\sum_{j=1}^p |b_j|
+\end{equation}
+
+Where $\mathbf{\Tilde{X}_i}$ is notation for standardization. The minimization problem is similar to that of OLS, except LASSO adds the sum of the absolute value of the coefficients ($\ell_1$-norm) multiplied by a penalty term, $\lambda$, to improve the generalization of the model and further implying the need for standardization. This approach relies on the assumption of approximate sparsity $s=\sum_{j=1}^p \mathbf{1}\left\{b_j \neq 0\right\}$, ie. that only a few coefficients are non-zero (\cite{belloni2014_restud}).  The LASSO estimator seeks to find a global minimum by changing all the coefficients in the model, including setting some coefficients to zero. In this way, LASSO excludes irrelevant, independent variables, and leaves only the most useful explanatory variables - given the end-goal is prediction (\cite{belloni2014_perspectives}). Going further, we can approach this "naïvely" by applying LASSO to (\ref{eq:main_regression}) and excluding $y_{i0}$ from the LASSO penalty. We can try to draw inference between $y_{i0}$ and any remaining regressors in $\mathbf{z_i}$ by least squares. This procedure is formally called the Post-(Single) LASSO. However, not only does this method rely on perfect model selection, thus potentially inducing omitted variable bias, we also do not know the asymptotic distribution of the estimate of initial GDP, $\hat{\beta}$, in this high dimensional regime. Therefore, we consider the Post Double LASSO procedure next. 
+
+\subsection{Post Double LASSO (PDL)}
+
+The method of Post Double Lasso solves the issue of the unknown asymptotic distribution of $\hat{\beta}$. Consider equation (\ref{eq:main_regression}) with following augmented 'second-stage' regression:
+\begin{equation}
+    \label{eq:aug_first_stage}
+    y_{i0}=\mathbf{z_i}\phi+\epsilon_i
+\end{equation}
+From (\ref{eq:main_regression}) and (\ref{eq:aug_first_stage}), we require $E[u_i|y_{i0},\mathbf{z}_i]=0$ and $E[\epsilon_i|\mathbf{z}_i]=0$, respectively, to consider the union of variables that predict both $y_{i0}$ and $g_i$ and thus guard against omitted variable bias (\cite{belloni2014_perspectives}). Combining these, we have a set of orthogonal moment conditions that implies $E[(y_{i0}-\mathbf{z_i}\phi)(g_i-\beta y_{i0}-\mathbf{z_i}\gamma)]=0$. Rearranging yields
+\begin{equation}
+    \label{eq:post_double_lasso_moment_cond}
+    \check{\beta}=\frac{E[(y_{i0}-\mathbf{z_i}\hat{\phi})(g_i-\mathbf{z_i}\hat{\gamma})]}{E[(y_{i0}-\mathbf{z_i}\hat{\phi})y_{i0}]}
+\end{equation}
+
+It can be shown that $\check{\beta}$ then follows the asymptotic distribution $\frac{\sqrt{n}(\check{\beta}-\beta)}{\sigma}\xrightarrow[]{d}$N(0,1) for $n\rightarrow\infty$ with $\check{\sigma}^2:=\frac{E[u^2\epsilon^2]}{(E[\epsilon^2])^2}$ and confidence intervals $\check{C} I_{1-\xi}=\left[\check{\beta} \pm q_{1-\xi / 2} \frac{\check{\sigma}}{\sqrt{n}}\right]$ based on $\xi$ significance level for the inverse standard normal CDF $q$, cf. \cite{belloni2014_restud}. This allows us to draw inference on $\beta$ without requiring $p<n$. Mechanically, it implies a 'first stage' and a 'second stage' where we LASSO first our outcome variable $g_i$ and second our treatment variable $y_{i0}$ on candidate regressors $\mathbf{z_i}$ with suitable penalty levels for each stage.
+
+\subsection{Estimating the penalty term}
+There are several ways of estimating the penalty term $\lambda$. We use the Bickel-Ritov-Tsybakov Rule (BRT) and the Belloni-Chen-Chernozhukov-Hansen Rule (BCCH) as both are proven to be good at consistently estimating coefficients (\cite{sørensen_munk_nielsen}). Cross-validation is another method for choosing level of penalty, but this relies on partitioning our data into subsamples, which we are not comfortable with given how relatively few observations/countries, we have.
+
+\subsubsection{The Bickel-Ritov-Tsybakov Rule (BRT)} 
+For the BRT-rule, consider the following equation: 
+\begin{equation}
+    \hat{\lambda}^{BRT}:=\frac{2c\sigma}{\sqrt{n}}\phi^{-1}\left(1-\frac{\alpha}{2p}\right) \text{\text{max}}\sqrt{\frac{1}{n}\sum_{i=1}^{n} \mathbf{X}^{2}_{i}},
+\end{equation}
+where $\phi$ is the standard normal CDF. To estimate $\lambda$, as per standard we choose $\alpha=0.05$ and $c=1.1$ and then estimate $\lambda$. The computation relies on two assumptions: 1) Homoskedasticity, such that $u_i$ from (\ref{eq:main_regression}) is independent of $\mathbf{X}_{i}$, and 2) variance $\sigma^{2}$ of $u_i$ is known. As a robust alternative, consider the following penalty, which does not rely on either of the previous assumptions.
+
+\subsubsection{The Belloni-Chen-Chernozhukov-Hansen Rule (BCCH)}
+Similar to BRT, we first choose $\alpha$ and $c$ and then estimate $\lambda$ as
+\begin{equation}
+    \hat{\lambda}^{BRT}:=\frac{2c}{\sqrt{n}}\phi^{-1}\left(1-\frac{\alpha}{2p}\right) \text{max}\sqrt{\frac{1}{n}\sum_{i=1}^{n} (g_i-\mathbf{X}^{'}_i(\hat{\beta}(\hat{\lambda}^{pilot})))^{2} \mathbf{X}^{2}_{i}}
+\end{equation}
+with
+\begin{equation}
+    \hat{\lambda}^{pilot}:=\frac{2c\sigma}{\sqrt{n}}\phi^{-1}\left(1-\frac{\alpha}{2p}\right) \text{max}\sqrt{\frac{1}{n}\sum_{i=1}^{n}g^{2}_i \mathbf{X}^{2}_{i}}
+\end{equation}
+BCCH allows heteroskedastic noise and does not assume that we know the variance of $u_i$.
+
+\section{Results}
+The results from our LASSO estimations are reported in \textit{table \ref{tab:beta_convergence_lasso}}. For illustration, we included the Post(-Single) LASSO (PSL) estimate and its LASSO path. Of things to note, we cannot reject our hypothesis of conditional convergence using the PDL. That is, a lower level of initial GDP by one standard deviation, raises GDP-growth by 0.12-0.21 standard deviations depending on the penalty level. Interestingly, the conclusion is opposite when for the PSL-estimate, which we will expand on in the discussion below. \textit{Further, we see that compared to the naïve approach, the penalty level is somewhat lower when using BRT PDL but remarkably higher when using BCCH PDL. BCCH will put a larger penalty on and shrink more coefficients to zero than BRT, so we end up with a model with fewer and more relevant regressors.}
+
+\begin{table}[H]
+    \centering
+    \caption{Beta-convergence}
+    \begin{threeparttable}
+        \begin{tabular}{lcccc|cc|cccc}
+        \toprule
+        {} &        Penalty &  Est. &    se &              CI &  $\hat{\lambda}_{1}$ & $\hat{\lambda}_{2}$ &   N &    p & $\hat{s}_1$ & $\hat{s}_2$ \\
+        \midrule
+        PDL &   \texttt{BRT} & -0.21 &  0.02 &  (-0.25, -0.17) &                 0.66 &                0.61 &  90 &  527 &           1 &           1 \\
+        PDL &  \texttt{BCCH} & -0.12 &  0.01 &   (-0.14, -0.1) &                55.93 &               22.74 &  90 &  527 &           0 &           0 ) \\
+        PSL &   \texttt{BRT} &  0.18 &  0.02 &    (0.22, 0.14) &                 0.66 &                   . &  90 &  527 &           1 &           .  \\
+        \bottomrule
+        \end{tabular}
+
+            \begin{tablenotes}
+                \footnotesize \textbf{\textit{Note}}: Standard 5\% significance levels apply. Only the squared level of population in 1500 (\texttt{pop1500)} survived the PSL-procedure. $\lambda_{1}$ and $\lambda_{2}$ denotes the penalty levels used in the PDL for the 'first' and 'second' stage. Likewise, $\hat{s}_1$ and $\hat{s}_2$ denote the number of non-zero regressors in each stage. See equation (\ref{eq:post_double_lasso_moment_cond}) for the estimator $\check{\beta}$ of the PDL-procedure.
+            \end{tablenotes}
+    \end{threeparttable}
+    
+    \label{tab:beta_convergence_lasso}
+\end{table}
+
+\subfile{Figures/lasso_path}
+
+\section{Discussion}
+The opposing conclusions on $\beta$-convergence from the PSL and PDL approaches is due to the former's focus on prediction. The PSL includes the set of regressors which collectively maximize predictive power, discarding regressors' individual ability to predict GDP growth. In a pair of two correlated, strong predictors, it will exclude one as it adds little to the predictive power provided by the other. This means, that we potentially remove causal explanatory variables, and keep the ones with the best fit for the model. In contrast, the two-stage procedure of the PDL ensures that both regressors are included. It is therefore likely that PDL has kept relevant regressors that the PSL has excluded, and thereby provide a more reliable estimate of $\beta$. Indeed, as \textit{figure \ref{fig:lasso_path_naive}} shows that the PSL shuts down all regressors except the squared population size in 1500 (\texttt{pop1500}), and given \textit{figure \ref{fig:lgdp_initial_growth}}, this can explain the positive estimate of the effect of initial GDP on GDP-growth. 
+% Fortæller at de højt korreleret
+
+
+Importantly, high-dimensional methods like LASSO are not a panacea to omitted variable bias. Recall that for our results to hold, we require that $E[u_i|y_{i0},\mathbf{z}_i]=0$ and $E[\epsilon_i|\mathbf{z}_i]=0$, implying that the error term is uncorrelated with our candidate regressors. The assumptions will be violated if factors such as access to international international finance, trade intensity, and corruption, which are not included in our $\mathbf{z}_i$, also affect GDP growth. In that case, our $\beta$ estimates are biased and results not useful.  
+
+\section{Conclusion}
+In this paper, we investigate the hypothesis of conditional convergence. Given that we are in a high-dimensional setting with more observations on candidate regressors than countries, we cannot use OLS and instead turn to Post Double LASSO. We find support for the hypothesis of conditional convergence, implying that countries with a lower initial GDP will experience a higher GDP growth. 
+Our results rely on the assumption that our set of candidate regressors include all relevant factors. If this does not hold, our estimate of the effect of initial GDP-levels will be biased due to omitted variables. However, as our final data set includes 405 regressors, any omitted variable bias is presumably small. 
+
+
+\subsubsection*{Quick notes:} 
+\begin{itemize}
+    \item We should define all parameters
+    \item Small error/misunderstanding in code - first step in naïve approach is the same as the first step in PDL/PPOL. Some errors w/ parenthesis in code (grr). Now reflected in code, not in assignment 2
+    \item Haven't defined $c$ and $\alpha$
+    \item Include the sparsity assumption
+    \item Shorter intro perhaps? A lot of info on variables (some of which are not included in our $\mathbf{z_i}$)
+    \item Clearer result section
+    \item The 'result' of the single LASSO effectively implies we are investigating the 'unconditional' beta-convergence(?)
+    \item List of all variables used?
+    \item LASSO path out? Again, the näive LASSO path is equivalent to the 'first-stage' PD LASSO path
+    \item Sharpen BRT vs BCCH (careful of notation). What is i and j? Change from " Y's and X's " to $g_i$ and $\mathbf{z}_i$
+    \item hat over beta in table?
+    \item Consistency of LASSO?
+    \item Should we remove the $2$ in BRT/BCCH-rules, effectively using the \texttt{sklearn}/\texttt{python} definition?
+    \item Something about standardization
+\end{itemize}
+
+\newgeometry{verbose,tmargin=1.9cm,bmargin=1.7cm,lmargin=1.5cm,rmargin=1.5cm}
+%Resetting the numbering as we are now in references/appendix:
+
+\newpage
+\begin{small}
+\bibliography{References.bib}
+\end{small}
+
+\end{document}
