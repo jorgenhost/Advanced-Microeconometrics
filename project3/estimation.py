@@ -166,7 +166,6 @@ def centered_grad(f, x0: np.ndarray, h:float=1.49e-08) -> np.ndarray:
 
     return grad
 
-
 def print_table(
         theta_label: list,
         results: dict,
