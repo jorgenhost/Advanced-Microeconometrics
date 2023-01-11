@@ -1,0 +1,366 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[English]{babel}
+\usepackage[a4paper, portrait, margin=2.5cm]{geometry}
+\geometry{verbose,tmargin=2.2cm,bmargin=1.9cm,lmargin=1.8cm,rmargin=1.8cm}
+\renewcommand{\baselinestretch}{1.5}
+\usepackage[font={footnotesize,it}]{footnote}
+\usepackage{setspace}
+\usepackage[toc,page]{appendix}
+\bibliographystyle{apalike}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{xcolor}
+\usepackage{bbm}
+\usepackage{mathtools,amssymb}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{booktabs, caption}
+\usepackage[labelfont=bf]{caption}
+\usepackage[margin = 0.5cm]{caption}
+\usepackage[figurename=Figure]{caption}
+\usepackage{subcaption}
+\captionsetup[table]{labelsep=colon,labelfont={bf,it},textfont=it}
+\captionsetup[figure]{labelsep=colon,justification=raggedright,labelfont={bf,it},textfont=it}
+\usepackage{longtable}
+\usepackage{adjustbox}
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage[final]{pdfpages}
+\usepackage{import}
+\usepackage{subfiles}
+\usepackage{amsmath}
+\usepackage{bbm}
+\usepackage{lipsum}
+\usepackage{rotating}
+\usepackage[round]{natbib}   % omit 'round' option if you prefer square brackets
+\usepackage[linktoc=all]{hyperref}
+\hypersetup{hidelinks}
+\usepackage{enumitem}
+\setlength{\parindent}{2em}
+\usepackage{url}
+\usepackage{verbatim}
+\usepackage{titlesec}
+\renewcommand{\arraystretch}{0.75}
+\usepackage{threeparttable}
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{Astrid Fugleholm, Jacob Strabo, \& Jørgen Høst}
+\lhead{Advanced Microeconometrics, Project 1}
+\fancyfoot[C]{Page \thepage\ of \pageref{LastPage}}
+
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+\renewcommand{\tablenotes}{\setlength\labelsep{0pt}}
+\renewcommand{\tablenotes}{\vspace{3em}}
+\renewcommand{\tablenotes}{\setstretch{1}}
+
+\title{AME Project 3: Car Demand and Home Market Bias}
+\author{asfugleholm}
+\date{October 2022}
+
+\begin{document}
+
+% Changing font of section titles
+\titleformat{\section}
+  {\normalfont\Large\scshape}{\thesection}{1em}{}
+\titleformat{\subsection}
+  {\normalfont\large\scshape}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\scshape}{\thesubsubsection}{1em}{}
+
+\subfile{Title}
+% Forskellig beskatning og andre conutry specifikke ting kan potentielt legitimiserer en form for pris diskrimination på tværs af lande -> ja, bortset fra, at vi egentlig gerne vil kigge på landene som om, at forbrugerne og landene ikke har forskellige præferencer for biler? Men kan sagtens se pointen!
+
+\section{Introduction}
+
+Swedes only drive Volvos, Italians only drive Fiats and Germans only drive in VW. Or do they? In this paper, we investigate the potential home bias in the demand for cars by computing the own-price elasticity of demand. To do this, we use a conditional logit model on data of the top 40 most sold cars in 5 different markets for the past 30 years. We find an average own-price elasticity of -0.003 for home-produced and -0.006 for foreign produced cars. However, the difference is statistically insignificant. Accompanying metrics, such as partial effects of home-production and compensating variation, both indicate home-bias. In particular, the average partial effect shows a statistically significant increase in market shares of home-produced of around 11 percentage points. Interestingly, this effect is negative and statistically significant for relatively expensive cars.
+
+% How do firms know what the demand for their product is and thereby which price to set? How do they assess which characteristics of their product is most important for the demand for their product from consumers? Which characteristics of the product do the consumers value the most?
+
+% How does demand advantage to a specific car affect price-elasticity of demand? Is there variation is the elasticity across car manufacturers, which may lead to market power? 
+
+\section{Data}
+We use panel data for 5 countries ($M=5$) over 30 years (1970-1999) ($T=30$) on the 40 highest-selling cars ($J=40$). We define a country-year pair as a market index by $i=1,...,N$, where $N=M\cdot T=150$. Our data has $N\cdot J=6,000$ observations on $85$ variables capturing various car characteristics including price, technical attributes, type, manufacturer, country of manufacturer, etc. We use the share of individuals in market $i$ purchasing car $j$ as the market share, denoted by $\mathbf{y}_i:=(y_{i1},...,y_{iJ})'$. 
+
+Aiming to predict market shares, we use 8 core car characteristics in our estimations, which are likely determinants of individuals' utility of cars. These include weight (\texttt{we}), cylinder volume (\texttt{cy}), horsepower (\texttt{hp}), an indicator for the car being produced domestically (\texttt{home}), and brand fixed effects, aswell as price (\texttt{logp}) (measured as log of price relative to per capita income). (\texttt{logp}) allows us to evaluate a relative value between the prices of cars and GDP per capita, why the measure adjust prices of cars with some level of prosperity in a given country. Further taking the log allows us to evaluate the elasticises, without knowing where on the demand curve we are located.
+
+\section{Modelling Demand for Cars}
+% Skal vi have ind at probabilities afgører s_j og formlen for s_j her?
+
+\section{Econometric Model}
+
+\subsection{The Random Utility Model (RUM)}
+The Random Utility Model (RUM) provides a framework for modeling $N$ individuals' utility-maximizing choice over a discrete set of $J$ alternatives. Individual $i$'s utility from choosing alternative $j$ is given as
+\begin{equation}
+    u_{ij}=v(x_{ij},\theta)+\varepsilon_{ij}, \quad \varepsilon_{ij}\sim \text{I.I.D. Extreme Value Type I} 
+\end{equation}
+\begin{equation}
+    y_i=\arg \max_{j\in\{1,2,...,J\}}u_{ij}
+    \label{eq:argmax_random_utility}
+\end{equation}
+where $v(x_{ij},\theta)$ is the deterministic utility given characteristics of individual $i$ and alternative $j$, and $\varepsilon_{ij}$ is the stochastic utility. Individuals choose the alternative $y_{ij}$ associated with the highest utility given observed characteristics ($v(x_{ij},\theta)$) and taste shocks ($\varepsilon_{ij}$). 
+
+\subsection{The conditional logit model}
+Within the set of RUMs lies the conditional logit model in which choice probabilities only depend on characteristics of alternatives
+\begin{equation}
+\label{cond_logit}
+    u_{ijh} = \mathbf{x}_{ij}\boldsymbol{\beta_o} + \varepsilon_{ijh}, \quad j=1,...,J, \quad \varepsilon_{ijh}\sim \text{I.I.D. Extreme Value Type I} 
+\end{equation}
+where $\mathbf{x}_{ij}$ is a $K\times1$ vector of observable market-car characteristics, and $\varepsilon_{ijh}$ is en error term observed by the household but not us, the econometricians. 
+The choice probability of $j$, i.e. the probability of car $j$ giving individual $i$ the highest utility is 
+\begin{equation}
+\label{choice_probability}
+    \text{Pr}(\text{household \textit{h} chooses car } j|\mathbf{X}_i)=\frac{\exp(\mathbf{x}_{ij}\boldsymbol{\beta_o})}{\sum_{k=1}^J\exp(\mathbf{x}_{ik}\boldsymbol{\beta_o})}\equiv s_j(\mathbf{X}_i,\boldsymbol{\beta_o}),
+\end{equation}
+where $\mathbf{X}_i=[\mathbf{x}_{i1},\mathbf{x}_{i2},...,\mathbf{x}_{iJ}]'$ is a $J\times K$ matrix, and the average choice probability for car $j$ makes out its market share as it is independent of $h$. 
+Since the exponential function cannot handle large numbers, we max re-scale by subtracting from $\mathbf{x}_{ij}\beta$ the maximum utility from any alternative
+\begin{equation}
+    \frac{\exp(\mathbf{x}_{ij}\boldsymbol{\beta}-K_i)}{\sum_{k=1}^J\exp(\mathbf{x}_{ik}\boldsymbol{\beta}-K_i)}, \quad K_i=\max_{j\in\{1,2,...,J\}}\mathbf{x}_{ij}\boldsymbol{\beta}.
+\end{equation}
+This ensures numerical stability but does not change choice probabilities as it amounts to subtracting constants from $\mathbf{x}_{ij}\beta$ in the exponential function. 
+
+Following \cite{project3_ABF_SJH}, we assume individuals have homogeneous preferences, and that utility of alternative $j$ is an affine function of its characteristics, i.e. $v(\textbf{X}_{ij},\theta)=\textbf{x}_{ij}\beta$. 
+As utility is ordinal and individual choices are based on relative utility rankings, these assumptions imply that we cannot identify an intercept nor constants without car-specific variation. If all cars have seat belts generating utility, shifting the level of utility does not change the relative ranking of cars, wherefore the variable would act as an intercept. 
+
+We estimate (\ref{cond_logit}) using the conditional maximum likelihood estimation (CMLE) nested in the class of M-estimators. 
+The loglikelihood contribution for market $i$ is 
+\begin{equation}
+    l(\mathbf{y}_i,\mathbf{X}_i;\boldsymbol{\beta})=\sum_{j=1}^J y_{ij} \log s_j(\mathbf{X}_i,\boldsymbol{\beta}).
+\end{equation}
+Minmizing the criterion function, i.e. the average negative log likelihood, gives us our estimator of $\beta$
+\begin{equation}
+\label{criterion_function}
+    \widehat{\mathbf{\beta}}=\arg \min_\beta -\frac{1}{N}\sum_{i=1}^Nl(\mathbf{y}_i,\mathbf{X}_i;\boldsymbol{\beta}).
+\end{equation}
+As the number of households $H$ is assumed to be large enough for $s_j(\mathbf{X}_i,\boldsymbol{\beta})=y_{ij}$, we let the number of markets grow infinitely ($N\rightarrow\infty$) when considering asymptotic results. We have no reason to believe the criterion function is non-convex, so we use the standard gradient-based Quasi-Newton (\texttt{BFGS}) algorithm in mimizing our log-likelihood function with respect to $\beta$. 
+
+\subsubsection{Asymptotic Properties of M-Estimators}
+% consistency (W. Theorem 12.1 and 12.2): 1) identification, 2) ULLN holds
+% asymptotically normal (W. Theorem 12.3): see lecture 11 (beta_0 interior to parameter space, criterion twicely differentiable, average score zero, average hession positive definite) -> can do inference
+
+Theorem 12.2 (Consistency of M-Estimators) states that the MLE $\widehat{\beta}$ is consistent for $\beta_o$ assuming $\beta_o$ is identified and a Uniform Law of Large Numbers (ULLN).   
+The ULLN indicate that for any parameter $\beta$, the sample minimand converges to its population equivalent uniformly in probability. Theorem 12.1 (Uniform Weak Law of Large Numbers) states that the ULLN holds if the parameter space is compact, and the criterion function in (\ref{criterion_function}) is continuous in $\beta$.
+
+Theorem 12.3 (Asymptotic Normality of M-Estimators) states that MLE is asymptotically normal assuming 1) $\beta_0$ is interior to the compact parameter space; 2) the criterion function in (\ref{criterion_function}) is twice continuously differentiable; 3) the average score equals zero; and 4) the Hessian is positive definite
+\begin{equation}
+\label{asymptotic_normality}
+    \sqrt{N}(\widehat{\mathbf{\beta}}-\mathbf{\beta}_0)\rightarrow^{d} N(0,\mathrm{\mathbf{A}}_o^{-1}\mathrm{\mathbf{B}}_o \mathrm{\mathbf{A}}_o^{-1}), \quad \mathrm{\mathbf{A}}_o:=\mathbb{E}[\mathrm{\mathbf{H}}(\mathbf{X},\mathbf{\beta}_0)], \quad \mathrm{\mathbf{B}}_o:= \mathbb{E}[\mathrm{\mathbf{s}}(\mathbf{X},\mathbf{\beta}_0)\mathrm{\mathbf{s}}(\mathbf{X},\mathbf{\beta}_0)']=\mathrm{Var}[\mathrm{\mathbf{s}}(\mathbf{X},\mathbf{\beta}_0)].
+\end{equation}
+
+\subsubsection{Asymptotic Variance Estimation}
+We believe that discrete choices are heteroskedastic in nature, so we compute standard errors using the 'sandwich' formula. Given consistency and asymptotic normality, this is given as
+\begin{equation}
+\label{sandwich_formula}
+    Avar(\widehat{\beta})=\mathrm{\mathbf{A}}_o^{-1}\mathrm{\mathbf{B}}_o \mathrm{\mathbf{A}}_o^{-1}/N,
+\end{equation}
+where $\mathrm{\mathbf{A}}_o$ and $\mathrm{\mathbf{B}}_o$ are defined as in (\ref{asymptotic_normality}).
+
+\subsection{Features of Interest}
+
+\subsubsection{Partial Effects}
+Partial effects measure how market shares change if a car is foreign relative to home produced. We compute the difference in market shares for cars with identical characteristics switching the indicator for being domestically produced (\texttt{home}) on and off
+\begin{equation}
+    s_j(\mathbf{X}_i,\boldsymbol{\beta_o})-s_j(\mathbf{\tilde{X}}_i,\boldsymbol{\tilde{\beta}_o}),
+\end{equation}
+where $\tilde{\mathbf{X}}_i$ has $\texttt{home}=0$. We compute standard errors using the Delta method.
+
+\subsubsection{Own- and Cross-Price Elasticities}
+To evaluate home bias, we compute own- ($\mathbf{\mathcal{E}}_{jj}$) and cross-price ($\mathbf{\ma\mathcal{E}}_{jk}$) elasticities using output from estimation of (\ref{cond_logit})
+\begin{equation}
+\label{own_price_elasticity}
+    \mathbf{\mathcal{E}}_{jj}(\mathbf{X}_i):=\frac{\partial s_j(\mathbf{X}_i,\mathbf{\beta}_0)}{\partial p_{ij}}\frac{p_{ij}}{s_j(\mathbf{X}_i,\mathbf{\beta}_0)} = \frac{\partial \nu_j}{\partial p_{ij}}s_j(s-s_j)\frac{p_{ij}}{s_j} = \frac{\partial \nu_j}{\partial p_{ij}}(1-s_j)p_{ij} = \beta_p (1-s_j)p_{ij}
+\end{equation}
+\begin{equation}
+\label{cross_price_elasticity}
+    \mathbf{\ma\mathcal{E}}_{jk}(\mathbf{X}_i):=\frac{\partial s_j(\mathbf{X}_i,\mathbf{\beta}_0)}{\partial p_{ik}}\frac{p_{ik}}{s_j(\mathbf{X}_i,\mathbf{\beta}_0)} = -\frac{\partial \nu_k}{\partial p_{ik}}p_{ik}s_k=-\beta_p p_{ik} s_k
+\end{equation}
+where $p_{ij}\in \mathbf{X}_i$ is the price of car $j$ in market $i$. 
+The own- and cross-price elasticities measure the $\%$ change in demand for car $j$ due to a $1\%$ increase in the price of car $j$ and another car $k$, resp. 
+A lower own-price elasticity of demand for home ($\mathbf{\mathcal{E}}_{jj}^{D}$) relative to foreign ($\mathbf{\mathcal{E}}_{jj}^{F}$) produced cars indicates home bias in a market. Testing the hypothesis of no home bias thus amounts to testing the null and alternative hypotheses
+\begin{equation}
+    \mathcal{H}_0: \mathbf{\mathcal{E}}_{jj}^{D}-\mathbf{\mathcal{E}}_{jj}^{F}=0 \quad \text{and} \quad \mathcal{H}_A: \mathbf{\mathcal{E}}_{jj}^{D}-\mathbf{\mathcal{E}}_{jj}^{F}\ne0.
+\end{equation}
+We use a two-sided $t$-test, which is asymptotically normally distributed under the null, calculated as the difference in average own-price elasticities for home- and foreign-produced cars with standard errors derived from the delta method. We compute standard errors using the Delta method.
+
+\subsubsection{Compensating variation}
+Compensating variation (CV) measures the compensating consumers need to obtain the same utility from a home and foreign produced car. Using the price variable \texttt{logp}, we compute CV as
+\begin{equation}
+    CV = \frac{1}{\beta_1} \log{\sum_{j=1}^J\exp{v_{ij}}} - \frac{1}{\beta_1} \log{\sum_{j=1}^J\exp{\Tilde{v}_{ij}}},
+\end{equation}
+where $\beta_1$ is the coefficient on \texttt{logp}, so $\frac{1}{\beta_1}$ converts utilities to money, and $v_{ij}$ and $\Tilde{v}_{ij}$ is the utility from a home and foreign produced car, resp. We compute standard errors using the Delta method.
+
+% \subsubsection{Variance of estimates} 
+% We compute standard errors of our estimates using the Delta method. It is a tool for obtaining asymptotic properties on functions of asymptotically normal estimators $h(\widehat{\beta})$ based on those of $\widehat{\beta}$. 
+% Specifically, if $\sqrt{N}(\widehat{\mathbf{\beta}}-\mathbf{\beta}_0)\rightarrow^{d} N(0,\sigma^2_0)$ for some $\sigma^2\in \mathrm{\mathbf{R}}_{++}$, $h$ is continuously differentiable at $\beta_0$ with nonzero derivative $h'(\beta_0)$, and $\widehat{\sigma}^2$ is a sequence of variance estimators consistent for $\sigma^2_0$, then
+% \begin{equation}
+% \label{delta_method}
+%     \sqrt{N}\{h(\widehat{\mathbf{\beta})}-h(\mathbf{\beta}_0)\}\rightarrow^{d} N\left(0,[h'(\beta_0)]^2 \sigma^2_0\right), \quad \sigma^2_0=\mathrm{\mathbf{A}}_o^{-1}\mathrm{\mathbf{B}}_o \mathrm{\mathbf{A}}_o^{-1}
+% \end{equation}
+% meaning that the random interval
+% \begin{equation}
+%     \left[h(\widehat{\beta})-1.96\cdot \frac{\hat{\upsilon}}{\sqrt{N}},h(\widehat{\beta})+1.96\cdot \frac{\hat{\upsilon}}{\sqrt{N}}\right], \quad \hat{\upsilon}^2:=[h'(\widehat{\beta}]^2\hat{\sigma}^2
+% \end{equation}
+% is an asymptotically valid 95 pct. confidence interval for $h(\beta_0)$, for instance our estimates of elasticities, partial effects of home production and compensating variation.
+
+\section{Results}
+\subsection{Main Results}
+Estimates from our OLS and conditional logit model in \textit{table \ref{tab:Logit_OLS}} provide suggestive evidence of home bias. With prices in logs, we can interpret OLS-estimates as elasticties. As expected, higher prices yield lower market shares, and the effect is lower for home produced cars. The logit coefficients do not have the same interpretation, but they do have the same sign. We also note the positive relation between market shares and a car being home produced.
+
+\begin{table}[H]
+    \centering
+    \caption{Car characteristics and market share}
+    \label{tab:Logit_OLS}
+    \begin{threeparttable}
+        \begin{tabular}{llcc}
+        \toprule
+           & {} &     Logit &       OLS \\
+        \midrule
+        cons\_ & {} &         . &  -2.37*** \\
+           & {} &         . &   (0.311) \\
+        logp & {} &   -0.25** &  -0.41*** \\
+           & {} &   (0.128) &   (0.042) \\
+        home & {} &   1.42*** &   1.04*** \\
+           & {} &   (0.044) &    (0.03) \\
+        logp\_x\_home & {} &    0.14** &   0.18*** \\
+           & {} &   (0.061) &   (0.056) \\
+        
+        \midrule
+        Brand dummies & & Yes & Yes \\
+        \bottomrule
+        \end{tabular}
+                \begin{tablenotes}
+                    \footnotesize \textit{Note:} p<0.1*, p<0.05**, p<0.01***. Standard errors computed using the 'sandwich' formula in parentheses. All of our results from the estimations can be found in \textit{table \ref{tab:Logit_OLS_A}}.
+                \end{tablenotes}
+                
+    \end{threeparttable}
+\end{table}
+
+\subsection{Evaluating Home Bias}
+\subsubsection{Partial Effects}
+Interestingly, we find statistically significant estimates of average partial effects for the home production variable. If we treat markets for cheaper and more expensive cars as separate, the effect is somewhat lower for cheaper cars, the effect is negative for the more expensive cars suggesting that at certain price points, customers turn away from home-produced cars. 
+\subsubsection{Own- and Cross-Price Elasticities}
+\textit{Table \ref{tab:elasticity_home_bias}} reports our computed own- and cross-price elasticities. We find a general own-price elasticity of $-0.05$, i.e. a $1\%$ increase in price relative to income per capita results in a $0.005\%$ average decline in market shares. A t-test of the difference between the average own-price elasticities of home- and foreign-produced cars yields a t-test size of $1.01$, thus rejecting the notion of home-bias. Intuitively we would expect cross-price elasticity to be of a smaller numerical value and with the opposite sign of the own-price elasticity, as market shares sum to 1 regardless of actual quantities sold, which is also the case. 
+
+\subsubsection{Compensating Variation}
+We supplement our analysis by looking at the compensating variation and the average partial effect of the home-production variable. Though statistically insignificant, we estimate that customers on average would be willing to pay \texttt{0.43} times the annual GDP per capita if a car would be home-produced (note that standard errors are equal to 0.45).
+
+We note that our results show the effect of price changes on market shares and not quantities sold. Throughout the paper, we normalize the market size to $100\%$, so a firm's market share can potentially decrease, while quantities sold increases. 
+
+\begin{table}[H]
+    \centering
+    \caption{Home bias: Average price elasticity per car}
+    \label{tab:elasticity_home_bias}
+    \begin{threeparttable}
+    \begin{tabular}{lcc}
+    \toprule
+    {} &   Est. &     SE \\
+    \midrule
+    Own-price elasticity           & -0.005 &  0.003 \\
+    Cross-price elasticity         &  0.000 &  0.000 \\
+    Own-price elasticity (home)    & -0.003 &  0.004 \\
+    Own-price elasticity (foreign) & -0.006 &  0.003 \\
+    \bottomrule
+    \end{tabular}
+                \begin{tablenotes}
+                \footnotesize \textit{Note:} Standard errors computed using the delta method in parentheses.
+                \end{tablenotes}
+    \end{threeparttable}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \caption{Home bias: Partial effect of home-production}
+    \begin{threeparttable}
+    \begin{tabular}{lccc}
+    \toprule
+    {} &  Partial effect &     SE &      t \\
+    \midrule
+    Whole market &           0.113 &  0.046 &  2.456 \\
+    Lower half   &           0.052 &  0.023 &  2.275 \\
+    Upper half   &          -0.059 &  0.031 & -1.893 \\
+    \bottomrule
+    \end{tabular}
+                \begin{tablenotes}
+                \footnotesize \textit{Note:} Standard errors computed using the delta method. Lower \& upper half refers to the distribution of car prices.
+                \end{tablenotes}
+        \label{tab:price_partial_effect}
+    \end{threeparttable}
+\end{table}
+
+\section{Discussion}
+The cross-price elasticity measures the \textit{proportional} effect of changing an attribute of car $j$ on the demand for all other cars. This pattern of substitution follows from the Independence of Irrelevant Alternatives (IIA) assumption stating that relative probabilities of choosing between any two cars only depend on attributes of those and not of other cars. The assumption is sensible if there are no fundamental differences between cars but unreasonable if substitution between some cars is more likely than others (e.g., gasoline and electric cars).
+
+In section \ref{sec:IIA}, we presented the assumption of IIA which is assumed to hold in the (conditional) logit model, but may not be the case in this context. It has been suggested that the oil crisis of the 1970's has changed the long-run demand for fuel-efficient cars (\cite{bonilla2009demand}). This implies that the relative substitution pattern which violates the IIA has also changed over time. A mixed logit model that would allow for unrestricted substitution patterns would be a natural extension of this paper.
+
+The model does not consider characteristics of individuals nor countries (markets) that potentially can be the explanatory variables that drives car purchases, ultimately resulting in potential Omitted Variable Bias issues. Furthermore the model only considers market shares, not quantities sold, nor profits. Had we instead had data on quantities sold of each car, we would further be able to interpret on the total attribution of each variable on the aggregated and individual number of sold cars. Lastly, GDP per capita is the denominator in logp, which adjust prices to some sort of welfare thus actual welfare distributions are ignored.
+
+\section{Conclusion}
+In this paper, we investigate the notion of home bias in the demand for cars. To do this, we use a conditional logit model in which we feed observed characteristics of the 40 most sold cars in 5 countries over 30 years. On the surface, we find some evidence of home-bias. A $1\%$ increase in price relative to income per capita leads to an average of $0.003\%$ and $0.006\%$ reduction in demand for home and foreign produced cars, resp. These estimates are, however, statistically insignificant. The same goes for our estimates of the average partial effect of home-production and compensating variation. It may be that unaccounted factors, such as unrestricted substitution patterns or characteristics specific to consumers, render our results insignificant. This calls for future work, perhaps so by using a mixed logit model.
+
+\newgeometry{verbose,tmargin=1.9cm,bmargin=1.7cm,lmargin=1.5cm,rmargin=1.5cm}
+%Resetting the numbering as we are now in references/appendix:
+
+\newpage
+\begin{small}
+\renewcommand{\baselinestretch}{1.15}
+\bibliography{References.bib}
+\end{small}
+
+\newpage
+\appendix
+\renewcommand*\thefigure{\Alph{section}.\arabic{figure}}
+\renewcommand*\thetable{\Alph{section}.\arabic{table}}
+\section{Appendix}
+
+\begin{table}[H]
+    \centering
+    \caption{Car characteristics and market share}
+    \label{tab:Logit_OLS_A}
+    \begin{threeparttable}
+        \begin{tabular}{llcc}
+        \toprule
+           & {} &     Logit &       OLS \\
+        \midrule
+        cons\_ & {} &         . &  -2.37*** \\
+           & {} &         . &   (0.311) \\
+        logp & {} &   -0.25** &  -0.41*** \\
+           & {} &   (0.128) &   (0.042) \\
+        home & {} &   1.42*** &   1.04*** \\
+           & {} &   (0.044) &    (0.03) \\
+        logp\_x\_home & {} &    0.14** &   0.18*** \\
+           & {} &   (0.061) &   (0.056) \\
+        cy & {} &     -0.12 &  -0.35*** \\
+           & {} &   (0.074) &   (0.066) \\
+        hp & {} &  -1.52*** &  -1.06*** \\
+           & {} &   (0.187) &   (0.149) \\
+        we & {} &   0.65*** &   1.28*** \\
+           & {} &   (0.188) &   (0.127) \\
+        li & {} &   -0.04** &  -0.06*** \\
+           & {} &   (0.017) &   (0.008) \\
+        he & {} &  -0.01*** &  -0.01*** \\
+           & {} &   (0.003) &   (0.002) \\
+        \midrule
+        Brand dummies & & Yes & Yes \\
+        \bottomrule
+        \end{tabular}
+                \begin{tablenotes}
+                    \footnotesize \textit{Note:} p<0.1*, p<0.05**, p<0.01***. Standard errors computed using the 'sandwich' formula in parentheses. 
+                \end{tablenotes}
+                
+    \end{threeparttable}
+\end{table}
+
+
+\end{document}
+
+The assumption of Independence of Irrelevant Alternatives: we cannot have that the relative probability of choosing alternative j to k (the odds-ratio) depends on characteristics of other alternatives than j and k.
+
+Implication of IIA: restricts substitution patterns
+If we add a new alternative which is identicial to one of the alternatives we already had in our choice set, then the probability for choosing any of the alternatives in the choice set falls for all alternatives. Makes sense mathematically, but it does not make sense intuitively. 
+If we change the price of car j, then that affects the choice probability (market shares) for all other car alternatives in a similar manner regardless of the characteristics of the cars. It is not linearly in the same was, as the market shares have to sum to one, but it is in a similar fashion. It does not make much intuitive sense that increasing the price of a Tesla changes market shares in a similar fashion for all other cars - it would make more sense if it changes market shares for other electric cars more than the market shares for gasoline cars. 
