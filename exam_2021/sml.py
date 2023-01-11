@@ -6,6 +6,35 @@ def q(theta, y, x, seed=None, R=100):
     '''
     return -loglikelihood(theta, y, x, seed, R)
 
+def q2(theta, y, x):
+    '''q(): criterion function to be minimized 
+    '''
+    return -loglikelihood_non_linear_panel(theta, y, x)
+
+def loglikelihood_non_linear_panel(theta, y, x): 
+    """The likelihood criterion function, returns an array with the
+    values from the likelihood criterion.
+
+    Args:
+        theta (np.ndarray): A list that contains the beta values and the sigma2
+        y (np.array): Depentent variable
+        x (np.array): Independent variables
+
+    Returns:
+        [np.array]: Array of likelihood values from the likelihood criterion.
+    """
+
+    beta = theta[:-1] # first K values 
+    sigma_u = theta[-1]
+    # Make sure inputs has correct dimensions
+    # (the optimizer sometimes flattens parameters during estimation)
+    beta = beta.reshape(-1, 1) 
+    y = y.reshape(-1, 1)
+
+    residual = y - np.exp(-(x @ beta))
+    ll =-0.5*np.log(sigma_u**2)-0.5*(residual**2/sigma_u**2) # FILL IN loglikelihood vector (should be an N-vector)
+    return ll.flatten()
+
 def loglikelihood(theta, y, x, seed=None, R=100): 
     '''loglikelihood for the linear panel random effects model 
     Args
